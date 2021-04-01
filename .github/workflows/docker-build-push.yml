@@ -1,0 +1,79 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+env:
+  VERSION_NUMBER: 1.0.0
+
+jobs:
+
+  build-linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2    
+    
+    - name: Dockerhub Login
+      env:
+        USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+        PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
+      run: docker login --username $USERNAME --password "$PASSWORD"
+    
+    - name: Build the Docker image      
+      run: docker build ./ubuntu-1804 --tag octopuslabs/workertools:$VERSION_NUMBER-ubuntu.1804 --tag octopuslabs/workertools:latest-ubuntu.1804
+      
+    - name: Push the version image
+      run: docker push octopuslabs/workertools:$VERSION_NUMBER-ubuntu.1804
+      
+    - name: Push the latest image
+      run: docker push octopuslabs/workertools:latest-ubuntu.1804
+      
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+        
+    - name: Dockerhub Login
+      env:
+        USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+        PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
+      run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
+    
+    - name: Build the Docker image
+      run: docker build ./windows-2019 --tag octopuslabs/workertools:${env:VERSION_NUMBER}-windows.2019 --tag octopuslabs/workertools:latest-windows.2019
+      
+    - name: Push the version image
+      run: docker push octopuslabs/workertools:${env:VERSION_NUMBER}-windows.2019
+      
+    - name: Push the latest image
+      run: docker push octopuslabs/workertools:latest-windows.2019
+  
+  build-docker-manifest:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Dockerhub Login
+      env:
+        USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+        PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
+      run: docker login --username $USERNAME --password "$PASSWORD"
+      
+    - name: Build Manifest
+      run: docker manifest create octopuslabs/workertools:latest octopuslabs/workertools:latest-windows.2019 octopuslabs/workertools:latest-ubuntu.1804
+      
+    - name: Push Manifest
+      run: docker manifest push octopuslabs/workertools:latest
+      
+    - name: Build Version Manifest
+      run: docker manifest create octopuslabs/workertools:$VERSION_NUMBER octopuslabs/workertools:$VERSION_NUMBER-windows.2019 octopuslabs/workertools:$VERSION_NUMBER-ubuntu.1804
+      
+    - name: Push Version Manifest
+      run: docker manifest push octopuslabs/workertools:$VERSION_NUMBER
