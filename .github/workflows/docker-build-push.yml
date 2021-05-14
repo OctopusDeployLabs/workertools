@@ -7,7 +7,7 @@ on:
     branches: [ main ]
     
 env:
-  VERSION_NUMBER: 1.0.0
+  VERSION_NUMBER: 1.1.0
 
 jobs:
 
@@ -32,6 +32,15 @@ jobs:
       
     - name: Push the latest image
       run: docker push octopuslabs/workertools:latest-ubuntu.1804
+
+    - name: Build the Docker image      
+      run: docker build ./ubuntu-2004 --tag octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004 --tag octopuslabs/workertools:latest-ubuntu.2004
+      
+    - name: Push the version image
+      run: docker push octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004
+      
+    - name: Push the latest image
+      run: docker push octopuslabs/workertools:latest-ubuntu.2004
       
   build-windows:
 
@@ -67,13 +76,13 @@ jobs:
       run: docker login --username $USERNAME --password "$PASSWORD"
       
     - name: Build Manifest
-      run: docker manifest create octopuslabs/workertools:latest octopuslabs/workertools:latest-windows.2019 octopuslabs/workertools:latest-ubuntu.1804
+      run: docker manifest create octopuslabs/workertools:latest octopuslabs/workertools:latest-windows.2019 octopuslabs/workertools:latest-ubuntu.2004
       
     - name: Push Manifest
       run: docker manifest push octopuslabs/workertools:latest
       
     - name: Build Version Manifest
-      run: docker manifest create octopuslabs/workertools:$VERSION_NUMBER octopuslabs/workertools:$VERSION_NUMBER-windows.2019 octopuslabs/workertools:$VERSION_NUMBER-ubuntu.1804
+      run: docker manifest create octopuslabs/workertools:$VERSION_NUMBER octopuslabs/workertools:$VERSION_NUMBER-windows.2019 octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004
       
     - name: Push Version Manifest
       run: docker manifest push octopuslabs/workertools:$VERSION_NUMBER
