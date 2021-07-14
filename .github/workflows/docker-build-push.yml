@@ -3,16 +3,45 @@ name: Docker Image CI
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-    
-env:
-  VERSION_NUMBER: 1.1.0
+    schedule:
+    - cron: '0 4 * * *'
 
 jobs:
 
-  build-linux:
+  get-version-number:
+    runs-on: windows-latest
+    outputs:
+      VERSION: ${{ steps.step1.outputs.VERSION }}
+      CONTINUE: ${{ steps.step1.outputs.Continue }}
+    steps:    
+    - uses: actions/checkout@v2
+    - id: step1
+      name: Compare latest flyway version with container
+      run: |
+        $chocoInformationRaw = choco info powershell-core --limitoutput
+        $version = ($chocoInformationRaw.Split("|"))[1]
+        $versionSplit = $version.Split(".")
+        $versionToCompare = "$($versionSplit[0]).$($versionSplit[1]).$($versionSplit[2])"
 
+        $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v1/repositories/octopuslabs/flyway-workertools/tags"
+        $matchingTag = $workerToolsTags | Where-Object { $_.name -eq $versionToCompare }
+
+        echo "::set-output name=CURRENT_FLYWAY_VERSION::$versionToCompare"
+
+        if ($null -ne $matchingTag)
+        {
+            Write-Host "Docker container already has latest version"
+            echo "::set-output name=Continue::No"
+        }
+        else
+        {
+            Write-Host "We need to upgrade the container to $versionToCompare"            
+            echo "::set-output name=Continue::Yes"
+        }      
+      shell: powershell
+
+  build-linux:
+    needs: [get-version-number]
     runs-on: ubuntu-latest
 
     steps:
@@ -24,26 +53,44 @@ jobs:
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username $USERNAME --password "$PASSWORD"
     
-    - name: Build the Docker image      
+    - name: Build the Docker image 
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker build ./ubuntu-1804 --tag octopuslabs/workertools:$VERSION_NUMBER-ubuntu.1804 --tag octopuslabs/workertools:latest-ubuntu.1804
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the version image
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker push octopuslabs/workertools:$VERSION_NUMBER-ubuntu.1804
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the latest image
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker push octopuslabs/workertools:latest-ubuntu.1804
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
 
     - name: Build the Docker image      
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker build ./ubuntu-2004 --tag octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004 --tag octopuslabs/workertools:latest-ubuntu.2004
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the version image
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker push octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the latest image
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker push octopuslabs/workertools:latest-ubuntu.2004
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
   build-windows:
-
+    needs: [get-version-number]
     runs-on: windows-latest
 
     steps:
@@ -56,16 +103,25 @@ jobs:
       run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
     
     - name: Build the Docker image
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker build ./windows-2019 --tag octopuslabs/workertools:${env:VERSION_NUMBER}-windows.2019 --tag octopuslabs/workertools:latest-windows.2019
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the version image
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker push octopuslabs/workertools:${env:VERSION_NUMBER}-windows.2019
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the latest image
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker push octopuslabs/workertools:latest-windows.2019
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
   
   build-docker-manifest:
-    needs: [build-windows, build-linux]
+    needs: [build-windows, build-linux, get-version-number]
     runs-on: ubuntu-latest
     
     steps:
@@ -77,12 +133,20 @@ jobs:
       
     - name: Build Manifest
       run: docker manifest create octopuslabs/workertools:latest octopuslabs/workertools:latest-windows.2019 octopuslabs/workertools:latest-ubuntu.2004
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push Manifest
       run: docker manifest push octopuslabs/workertools:latest
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Build Version Manifest
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker manifest create octopuslabs/workertools:$VERSION_NUMBER octopuslabs/workertools:$VERSION_NUMBER-windows.2019 octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push Version Manifest
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker manifest push octopuslabs/workertools:$VERSION_NUMBER
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
