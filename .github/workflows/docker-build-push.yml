@@ -16,14 +16,14 @@ jobs:
     steps:    
     - uses: actions/checkout@v2
     - id: step1
-      name: Compare latest flyway version with container
+      name: Compare latest version with container
       run: |
         $chocoInformationRaw = choco info powershell-core --limitoutput
         $version = ($chocoInformationRaw.Split("|"))[1]
         $versionSplit = $version.Split(".")
         $versionToCompare = "$($versionSplit[0]).$($versionSplit[1]).$($versionSplit[2])"
 
-        $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v1/repositories/octopuslabs/flyway-workertools/tags"
+        $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v1/repositories/octopuslabs/workertools/tags"
         $matchingTag = $workerToolsTags | Where-Object { $_.name -eq $versionToCompare }
 
         echo "::set-output name=VERSION::$versionToCompare"

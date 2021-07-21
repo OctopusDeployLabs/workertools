@@ -1,6 +1,6 @@
 # Worker Tools Base
 
-This repository contains images that contain on the bare minimum to use the execution container feature with Octopus Deploy.
+This repository contains images that contain the bare minimum to use the execution container feature with Octopus Deploy.
 
 - Python3
 - PowerShell Core
