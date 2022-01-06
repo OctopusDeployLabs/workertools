@@ -16,7 +16,7 @@ RUN wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsof
 RUN apt-get install -y python3-pip groff
 
 # Install the Octopus CLI
-run apt update && apt install --no-install-recommends gnupg curl ca-certificates apt-transport-https && \
+run apt update && apt install --no-install-recommends gnupg curl ca-certificates apt-transport-https -y && \
     curl -sSfL https://apt.octopus.com/public.key | apt-key add - && \
     sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && \
-    apt update && apt install octopuscli
+    apt update && apt install octopuscli -y
