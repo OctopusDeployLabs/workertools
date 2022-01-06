@@ -4,6 +4,7 @@ This repository contains images that contain the bare minimum to use the executi
 
 - Python3
 - PowerShell Core
+- Octopus CLI
 
 There are three images built in this repo:
 

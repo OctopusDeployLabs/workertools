@@ -14,3 +14,9 @@ RUN wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsof
 
 # Get python & groff to support Python scripts in execution container
 RUN apt-get install -y python3-pip groff
+
+# Install the Octopus CLI
+run apt update && apt install --no-install-recommends gnupg curl ca-certificates apt-transport-https && \
+    curl -sSfL https://apt.octopus.com/public.key | apt-key add - && \
+    sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && \
+    apt update && apt install octopuscli

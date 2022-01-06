@@ -18,3 +18,6 @@ RUN choco install powershell-core -y --no-progress
 # # Install python
 RUN choco install -y python3 --no-progress; `
     refreshenv
+
+# # Install Octo CLI
+run choco install octopustools -y --no-progress
