@@ -134,7 +134,7 @@ jobs:
       run: docker login --username $USERNAME --password "$PASSWORD"
       
     - name: Build Manifest
-      run: docker manifest create octopuslabs/workertools:latest octopuslabs/workertools:latest-windows.2019 octopuslabs/workertools:latest-ubuntu.2004
+      run: docker manifest create octopuslabs/workertools:latest octopuslabs/workertools:latest-windows.2019 octopuslabs/workertools:latest-ubuntu.1804
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push Manifest
@@ -144,7 +144,7 @@ jobs:
     - name: Build Version Manifest
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
-      run: docker manifest create octopuslabs/workertools:$VERSION_NUMBER octopuslabs/workertools:$VERSION_NUMBER-windows.2019 octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004
+      run: docker manifest create octopuslabs/workertools:$VERSION_NUMBER octopuslabs/workertools:$VERSION_NUMBER-windows.2019 octopuslabs/workertools:$VERSION_NUMBER-ubuntu.1804
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push Version Manifest
