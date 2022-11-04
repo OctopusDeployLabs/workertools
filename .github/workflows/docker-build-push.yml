@@ -16,7 +16,7 @@ jobs:
       VERSION: ${{ steps.step1.outputs.VERSION }}
       CONTINUE: ${{ steps.step1.outputs.Continue }}
     steps:    
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - id: step1
       name: Compare latest version with container
       run: |
@@ -28,17 +28,17 @@ jobs:
         $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/octopuslabs/workertools/tags?page_size=50"
         $matchingTag = $workerToolsTags.results | Where-Object { $_.name -eq $versionToCompare }
 
-        echo "::set-output name=VERSION::$versionToCompare"
+        echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
 
         if ($null -ne $matchingTag)
         {
             Write-Host "Docker container already has latest version"
-            echo "::set-output name=Continue::No"
+            echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
         }
         else
         {
             Write-Host "We need to upgrade the container to $versionToCompare"            
-            echo "::set-output name=Continue::Yes"
+            echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
         }      
       shell: powershell
 
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2    
+    - uses: actions/checkout@v3    
     
     - name: Dockerhub Login
       env:
@@ -96,7 +96,7 @@ jobs:
     runs-on: windows-2019
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
         
     - name: Dockerhub Login
       env:
