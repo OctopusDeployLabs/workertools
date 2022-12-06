@@ -1,12 +1,12 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # get `wget` & software-properties-common
 # https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu?view=powershell-7.3#installation-via-package-repository
 RUN apt-get update && \
     apt-get install -y wget unzip apt-utils curl apt-transport-https software-properties-common
 
-# get powershell for 20.04 to support PowerShell scripts in execution container
-RUN wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb && \
+# get powershell for 22.04 to support PowerShell scripts in execution container
+RUN wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
     apt-get update && \
     apt-get install -y powershell
