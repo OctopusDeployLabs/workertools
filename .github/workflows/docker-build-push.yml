@@ -116,7 +116,7 @@ jobs:
       run: docker push octopuslabs/workertools:${env:VERSION_NUMBER}-windows.2019
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the win2019 latest image
+    - name: Push the latest win2019 image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
       run: docker push octopuslabs/workertools:latest-windows.2019
