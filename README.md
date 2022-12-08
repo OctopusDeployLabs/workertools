@@ -4,7 +4,8 @@ This repository contains images that contain the bare minimum to use the executi
 
 - Python3
 - PowerShell Core
-- Octopus CLI
+- The *EAP* `octopus` [command line tool](https://github.com/OctopusDeploy/cli/blob/main/README.md) (written in `Go`)
+- The `octo` [command line tool](https://github.com/OctopusDeploy/OctopusCLI/) (written in `C#`)
 
 The following images are built in this repo:
 
