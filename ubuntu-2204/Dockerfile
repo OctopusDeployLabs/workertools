@@ -1,11 +1,11 @@
 FROM ubuntu:22.04
 
-# get `wget` & software-properties-common
-# https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu?view=powershell-7.3#installation-via-package-repository
+# Get pre-req tooling
 RUN apt-get update && \
     apt-get install -y wget unzip apt-utils curl apt-transport-https software-properties-common
 
 # get powershell for 22.04 to support PowerShell scripts in execution container
+# https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu?view=powershell-7.3#installation-via-package-repository
 RUN wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
     apt-get update && \
@@ -21,4 +21,4 @@ RUN apt update && apt install --no-install-recommends gnupg curl ca-certificates
     apt update && apt install -y octopuscli
 
 # Install vNext Octopus CLI
-RUN curl -L https://github.com/OctopusDeploy/cli/raw/main/scripts/install.sh | bash
+RUN apt install -y octopus-cli

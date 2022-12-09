@@ -1,6 +1,5 @@
 FROM ubuntu:20.04
 
-# get `wget` & software-properties-common
 # https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu?view=powershell-7.3#installation-via-package-repository
 RUN apt-get update && \
     apt-get install -y wget unzip apt-utils curl apt-transport-https software-properties-common
@@ -21,4 +20,4 @@ RUN apt update && apt install --no-install-recommends gnupg curl ca-certificates
     apt update && apt install -y octopuscli
 
 # Install vNext Octopus CLI
-RUN curl -L https://github.com/OctopusDeploy/cli/raw/main/scripts/install.sh | bash
+RUN apt install -y octopus-cli
