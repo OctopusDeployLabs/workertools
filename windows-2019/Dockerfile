@@ -20,9 +20,9 @@ RUN choco install -y python3 --no-progress; `
     refreshenv
 
 # # Install legacy Octo CLI
-RUN choco install octopustools -y --no-progress `
+RUN choco install octopustools -y --no-progress; `
     refreshenv
 
 # # Install vNext Octo CLI
-RUN choco install octopus-cli -y --no-progress `
+RUN choco install octopus-cli -y --no-progress; `
     refreshenv
