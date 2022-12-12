@@ -4,14 +4,15 @@ This repository contains images that contain the bare minimum to use the executi
 
 - Python3
 - PowerShell Core
-- Octopus CLI
+- The *EAP* `octopus` [command line tool](https://github.com/OctopusDeploy/cli/blob/main/README.md) (written in `Go`)
+- The `octo` [command line tool](https://github.com/OctopusDeploy/OctopusCLI/) (written in `C#`)
 
-There are three images built in this repo:
+The following images are built in this repo:
 
-- Ubuntu 20.04
-- Ubuntu 18.04
-- Windows 2019
+- Ubuntu 22.04
+- Ubuntu 20.04 (tagged `latest` in [DockerHub](https://hub.docker.com/r/octopuslabs/workertools/tags?page=1&name=latest))
+- Windows 2019 (tagged `latest` in [DockerHub](https://hub.docker.com/r/octopuslabs/workertools/tags?page=1&name=latest))
 
 A new image will be built each time a new version of PowerShell Core is created.  The version numbers will be based on the version of PowerShell Core.
 
-**Please Consider this repository provided as is.  If there are any issues please do not contact support.**
+**Please consider this repository provided as is.  If there are any issues please do not contact support.**
