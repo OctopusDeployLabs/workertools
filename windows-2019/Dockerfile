@@ -28,4 +28,5 @@ RUN choco install octopustools -y --no-progress; `
 
 # # Install vNext Octo CLI
 RUN choco install octopus-cli -y --no-progress; `
+    Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1; `
     refreshenv
