@@ -1,6 +1,9 @@
 # escape=`
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+# We have to use the .NET Framework base image in place of mcr.microsoft.com/windows/servercore:ltsc2019
+# As chocolately v2 requires .NET 4.8. See https://docs.chocolatey.org/en-us/guides/upgrading-to-chocolatey-v2-v6#net-framework-4.8-required
+# Note: .NET 4.8.1 is not supported on Win2019, only Win2022+. See https://devblogs.microsoft.com/dotnet/announcing-dotnet-framework-481/
+FROM mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019
 SHELL ["powershell", "-Command"]
 
 # Install Choco
