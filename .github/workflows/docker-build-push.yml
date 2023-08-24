@@ -134,14 +134,6 @@ jobs:
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username $USERNAME --password "$PASSWORD"
       
-    - name: Build Manifest
-      run: docker manifest create octopuslabs/workertools:latest octopuslabs/workertools:latest-windows.2022 octopuslabs/workertools:latest-ubuntu.2004
-      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
-      
-    - name: Push Manifest
-      run: docker manifest push octopuslabs/workertools:latest
-      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
-      
     - name: Build Version Manifest
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}     
