@@ -192,7 +192,7 @@ jobs:
         WIN2019_VERSION: ${{ needs.get-version-number.outputs.WIN2019_VERSION }}
         WIN2022_VERSION: ${{ needs.get-version-number.outputs.WIN2022_VERSION }}
       run: |
-       docker manifest annotate --os "windows" --os-version "$WIN2019_VERSION" --arch "amd64" "octopuslabs/workertools:latest" "octopuslabs/workertools:latest-windows.2019" \
+       docker manifest annotate --os "windows" --os-version "$WIN2019_VERSION" --arch "amd64" "octopuslabs/workertools:latest" "octopuslabs/workertools:latest-windows.2019" && \
        docker manifest annotate --os "windows" --os-version "$WIN2022_VERSION" --arch "amd64" "octopuslabs/workertools:latest" "octopuslabs/workertools:latest-windows.2022"
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
@@ -212,7 +212,7 @@ jobs:
         WIN2019_VERSION: ${{ needs.get-version-number.outputs.WIN2019_VERSION }}
         WIN2022_VERSION: ${{ needs.get-version-number.outputs.WIN2022_VERSION }}
       run: |
-        docker manifest annotate --os "windows" --os-version "$WIN2019_VERSION" --arch "amd64" "octopuslabs/workertools:$VERSION_NUMBER" "octopuslabs/workertools:$VERSION_NUMBER-windows.2019" \
+        docker manifest annotate --os "windows" --os-version "$WIN2019_VERSION" --arch "amd64" "octopuslabs/workertools:$VERSION_NUMBER" "octopuslabs/workertools:$VERSION_NUMBER-windows.2019" && \
         docker manifest annotate --os "windows" --os-version "$WIN2022_VERSION" --arch "amd64" "octopuslabs/workertools:$VERSION_NUMBER" "octopuslabs/workertools:$VERSION_NUMBER-windows.2022"
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
 
