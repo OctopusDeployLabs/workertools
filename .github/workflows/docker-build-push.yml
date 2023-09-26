@@ -74,7 +74,7 @@ jobs:
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username $USERNAME --password "$PASSWORD"
     
-    - name: Build the ubuntu-20.04 Docker image 
+    - name: Build the ubuntu-20.04 image 
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker build ./ubuntu-2004 --tag octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004 --tag octopuslabs/workertools:latest-ubuntu.2004
@@ -86,25 +86,25 @@ jobs:
       run: docker push octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the latest ubuntu-20.04 image
+    - name: Push the ubuntu-20.04 latest image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker push octopuslabs/workertools:latest-ubuntu.2004
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
 
-    - name: Build the ubuntu-22.04 Docker image      
+    - name: Build the ubuntu-22.04 image      
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker build ./ubuntu-2204 --tag octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2204 --tag octopuslabs/workertools:latest-ubuntu.2204
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the ubuntu-22.04 version image
+    - name: Push the ubuntu-22.04 version-specific image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker push octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2204
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the latest ubuntu-22.04 image
+    - name: Push the ubuntu-22.04 latest image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker push octopuslabs/workertools:latest-ubuntu.2204
@@ -123,19 +123,19 @@ jobs:
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
     
-    - name: Build the win2019 Docker image
+    - name: Build the win2019 image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker build ./windows-2019 --tag octopuslabs/workertools:${env:VERSION_NUMBER}-windows.2019 --tag octopuslabs/workertools:latest-windows.2019
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the win2019 version image
+    - name: Push the win2019 version-specific image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker push octopuslabs/workertools:${env:VERSION_NUMBER}-windows.2019
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the latest win2019 image
+    - name: Push the win2019 latest image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker push octopuslabs/workertools:latest-windows.2019
@@ -154,19 +154,19 @@ jobs:
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
     
-    - name: Build the win2022 Docker image
+    - name: Build the win2022 image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker build ./windows-2022 --tag octopuslabs/workertools:${env:VERSION_NUMBER}-windows.2022 --tag octopuslabs/workertools:latest-windows.2022
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the win2022 version image
+    - name: Push the win2022 version-specific image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker push octopuslabs/workertools:${env:VERSION_NUMBER}-windows.2022
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the latest win2022 image
+    - name: Push the win2022 latest image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker push octopuslabs/workertools:latest-windows.2022
@@ -185,7 +185,7 @@ jobs:
       run: docker login --username $USERNAME --password "$PASSWORD"
     
     - name: Create docker manifest for latest tag
-      run: docker manifest create octopuslabs/workertools:latest octopuslabs/workertools:latest-windows.2019 octopuslabs/workertools:latest-windows.2022 octopuslabs/workertools:latest-ubuntu.2004 
+      run: docker manifest create octopuslabs/workertools:latest octopuslabs/workertools:latest-windows.2019 octopuslabs/workertools:latest-windows.2022 octopuslabs/workertools:latest-ubuntu.2204 
 
     - name: Annotate docker manifest for latest tag
       env:
@@ -203,7 +203,7 @@ jobs:
     - name: Create docker manifest for version-specific tag
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
-      run: docker manifest create octopuslabs/workertools:$VERSION_NUMBER octopuslabs/workertools:$VERSION_NUMBER-windows.2019 octopuslabs/workertools:$VERSION_NUMBER-windows.2022 octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004
+      run: docker manifest create octopuslabs/workertools:$VERSION_NUMBER octopuslabs/workertools:$VERSION_NUMBER-windows.2019 octopuslabs/workertools:$VERSION_NUMBER-windows.2022 octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2204
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
 
     - name: Annotate docker manifest for version-specific tag
