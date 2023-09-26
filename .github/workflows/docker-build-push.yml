@@ -80,7 +80,7 @@ jobs:
       run: docker build ./ubuntu-2004 --tag octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004 --tag octopuslabs/workertools:latest-ubuntu.2004
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the ubuntu-20.04 version image
+    - name: Push the ubuntu-20.04 version-specific image
       env:
         VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
       run: docker push octopuslabs/workertools:$VERSION_NUMBER-ubuntu.2004
