@@ -155,6 +155,7 @@ jobs:
         USERNAME: ${{ secrets.DOCKER_HUB_USER }}
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     
     - name: Build the win2022 image
       env:
