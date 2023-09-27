@@ -23,42 +23,52 @@ jobs:
       name: Compare latest version with container
       run: |
         $chocoInformationRaw = choco info powershell-core --limitoutput
-        $version = ($chocoInformationRaw.Split("|"))[1]
-        $versionSplit = $version.Split(".")
-        $versionToCompare = "$($versionSplit[0]).$($versionSplit[1]).$($versionSplit[2])"
+        $versionOutput = ($chocoInformationRaw.Split("|"))[1]
 
-        $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/octopuslabs/workertools/tags?page_size=50"
-        $matchingTag = $workerToolsTags.results | Where-Object { $_.name -eq $versionToCompare }
-
-        echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
-
-        if ($null -ne $matchingTag)
-        {
-            Write-Host "Docker container already has latest version"
+        [System.Version]$version = $null
+        $versionParsed = [System.Version]::TryParse($versionOutput, [ref]$version)
+        if(-not $versionParsed) {
+            Write-Host "Unable to parse '$versionOutput' as a valid version. Won't continue"
             echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
         }
-        else
-        {
-            Write-Host "We need to upgrade the container to $versionToCompare"            
-            echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
+        else {
+            $versionToCompare = "$($version.Major).$($version.Minor).$($version.Build)"
+            Write-Host "Parsed version as $versionToCompare"
+
+            $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/octopuslabs/workertools/tags?page_size=50"
+            $matchingTag = $workerToolsTags.results | Where-Object { $_.name -eq $versionToCompare }
+
+            echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
+
+            if ($null -ne $matchingTag)
+            {
+                Write-Host "Docker container already has latest version"
+                echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
+            }
+            else
+            {
+                Write-Host "We need to upgrade the container to $versionToCompare"            
+
+                Write-Host "Getting OS versions for windows 2022 and 2019"
+                $win2019_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019" | ConvertFrom-Json)
+                $WIN2019_VERSION = $win2019_manifest.Descriptor.Platform.'os.version'
+                Write-Host "WIN2019_VERSION: $WIN2019_VERSION"
+
+                $win2022_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2022" | ConvertFrom-Json)
+                $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
+                Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
+
+                if([string]::IsNullOrWhiteSpace($WIN2019_VERSION) -or [string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
+                  throw "Could not establish OS versions for windows 2022 and 2019 needed for docker manifest"
+                }
+
+                echo "WIN2019_VERSION=$WIN2019_VERSION" >> $env:GITHUB_OUTPUT
+                echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT
+                
+                Write-Host "We have everything we need, continuing."
+                echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
+            }
         }
-        
-        Write-Host "Getting OS versions for windows 2022 and 2019"
-        $win2019_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019" | ConvertFrom-Json)
-        $WIN2019_VERSION = $win2019_manifest.Descriptor.Platform.'os.version'
-        Write-Host "WIN2019_VERSION: $WIN2019_VERSION"
-
-        $win2022_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2022" | ConvertFrom-Json)
-        $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
-        Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
-
-        if([string]::IsNullOrWhiteSpace($WIN2019_VERSION) -or [string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
-          throw "Could not establish OS versions for windows 2022 and 2019 needed for docker manifest"
-        }
-
-        echo "WIN2019_VERSION=$WIN2019_VERSION" >> $env:GITHUB_OUTPUT
-        echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT
-
       shell: powershell
 
   build-ubuntu:
