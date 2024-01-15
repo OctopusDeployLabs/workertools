@@ -53,7 +53,7 @@ jobs:
                 $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
                 Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
 
-                if([string]::IsNullOrWhiteSpace($WIN2019_VERSION) -or [string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
+                if([string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
                   throw "Could not establish OS versions for windows 2022 needed for docker manifest"
                 }
 
