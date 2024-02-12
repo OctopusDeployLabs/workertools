@@ -3,7 +3,7 @@ name: Build workertools base image
 on:
   push:
     branches: 
-    - minimal-manifest
+    - main
     paths:
     - base/** 
   schedule:

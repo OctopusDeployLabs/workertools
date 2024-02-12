@@ -3,7 +3,7 @@ name: Build liquibase-workertools image
 on:
   push:
     branches: 
-    - minimal-manifest
+    - main
     paths:
     - liquibase/**
   schedule:

@@ -3,7 +3,7 @@ name: Build azure-workertools image
 on:
   push:
     branches: 
-    - minimal-manifest
+    - main
     paths:
     - azure/**
   schedule:

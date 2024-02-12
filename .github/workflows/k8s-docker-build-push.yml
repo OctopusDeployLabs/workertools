@@ -3,7 +3,7 @@ name: Build k8s-workertools image
 on:
   push:
     branches: 
-    - minimal-manifest
+    - main
     paths:
     - k8s/**
   schedule:

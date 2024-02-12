@@ -3,7 +3,7 @@ name: Build vault-workertools image
 on:
   push:
     branches: 
-    - minimal-manifest
+    - main
     paths:
     - vault/**
   schedule:

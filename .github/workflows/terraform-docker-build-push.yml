@@ -3,7 +3,7 @@ name: Build terraform-workertools image
 on:
   push:
     branches: 
-    - minimal-manifest
+    - main
     paths:
     - terraform/**
   schedule:

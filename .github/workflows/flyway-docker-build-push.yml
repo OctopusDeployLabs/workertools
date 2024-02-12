@@ -3,7 +3,7 @@ name: Build flyway-workertools image
 on:
   push:
     branches: 
-    - minimal-manifest
+    - main
     paths:
     - flyway/**
   schedule:
