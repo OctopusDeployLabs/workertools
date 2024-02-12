@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-   REGISTRY_IMAGE_BASE: ${{ secrets.DOCKER_HUB_USER }}/workertools
+   REGISTRY_IMAGE_BASE: octopuslabs/workertools
    REGISTRY_IMAGE: octopuslabs/flyway-workertools
 
 jobs:
