@@ -1,18 +1,17 @@
-name: Build k8s-workertools image
+name: Build workertools base image
 
 on:
   push:
     branches: 
     - minimal-manifest
     paths:
-    - k8s/**
+    - base/** 
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 1 * * *'
   workflow_dispatch:
 
 env:
-   REGISTRY_IMAGE_BASE: ${{ secrets.DOCKER_HUB_USER }}/workertools
-   REGISTRY_IMAGE: ${{ secrets.DOCKER_HUB_USER }}/k8s-workertools
+   REGISTRY_IMAGE: ${{ secrets.DOCKER_HUB_USER }}/workertools
 
 jobs:
 
@@ -21,54 +20,14 @@ jobs:
     outputs:
       CONTINUE: ${{ steps.check-version.outputs.CONTINUE }}
       VERSION: ${{ steps.check-version.outputs.VERSION }}
-      GCLOUD_CLI_VERSION: ${{ steps.check-version.outputs.GCLOUD_CLI_VERSION }}
-      KUBECTL_MAJOR_MINOR_VERSION: ${{ steps.check-version.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
+      MAJOR_VERSION: ${{ steps.check-version.outputs.MAJOR_VERSION }}
       WIN2022_VERSION: ${{ steps.check-version.outputs.WIN2022_VERSION }}
     steps:    
     - uses: actions/checkout@v4
     - id: check-version
       name: Compare latest version with container
       run: |
-        Write-Output "Getting GCLOUD CLI version (needed for gke-auth-plugin)"
-        $googleCloudSdkInfo = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/google/cloud-sdk/tags?page=1"
-        $otherImages = $googleCloudSdkInfo.results | Where-Object { $_.name -ine "latest" }
-        $latestTag = $googleCloudSdkInfo.results | Where-Object { $_.name -ieq "latest" }
-        
-        if($null -eq $latestTag)  {
-            throw "Couldnt find latest tag for Google Cloud SDK version from DockerHub"
-        }
-        
-        $latestTagImage = $latestTag.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active"} | Select-Object -First 1
-        if($null -eq $latestTagImage)  {
-            throw "Couldnt find latest tag image for Google Cloud SDK version for linux/amd64"
-        }
-        $latestDigest = $latestTagImage.digest
-        Write-Output "Found latest digest: $latestDigest"
-
-        $GCLOUD_CLI_VERSION = ""
-        foreach($result in $otherImages) {
-            $matchingImageDigest = $result.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
-            if($null -eq $matchingImageDigest) {
-                continue;
-            }
-            else {
-                $version = $result.name
-                Write-Output "Found version '$version' that matches digest: $latestDigest"
-                $versionSplit = $version.Split(".")
-                $GCLOUD_CLI_VERSION = "$($versionSplit[0]).$($versionSplit[1]).$($versionSplit[2])"
-                break;
-            }
-        }
-
-        if ([string]::IsNullOrWhiteSpace($GCLOUD_CLI_VERSION)) {
-            throw "No GCLOUD CLI version with digest $latestDigest found"
-        }
-        else {
-            echo "GCLOUD_CLI_VERSION=$GCLOUD_CLI_VERSION" >> $env:GITHUB_OUTPUT
-        }
-
-        Write-Output "Getting kubectl version"
-        $chocoInformationRaw = choco info kubernetes-cli --limitoutput
+        $chocoInformationRaw = choco info powershell-core --limitoutput
         $versionOutput = ($chocoInformationRaw.Split("|"))[1]
 
         [System.Version]$version = $null
@@ -80,15 +39,15 @@ jobs:
         else {
             $versionToCompare = "$($version.Major).$($version.Minor).$($version.Build)"
             Write-Host "Parsed version as $versionToCompare"
-            # Major/minor version is used for linux dockerfile to install kubectl correctly
-            $majorMinorVersion = "$($version.Major).$($version.Minor)"
-            Write-Host "kubectl Major.Minor: $majorMinorVersion"
 
             $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/${{ env.REGISTRY_IMAGE }}/tags?page_size=50"
             $matchingTag = $workerToolsTags.results | Where-Object { $_.name -eq $versionToCompare }
 
             echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
-            echo "KUBECTL_MAJOR_MINOR_VERSION=$majorMinorVersion" >> $env:GITHUB_OUTPUT
+            echo "MAJOR_VERSION=$($version.Major)" >> $env:GITHUB_OUTPUT
+            
+            Write-Host "VERSION: $versionToCompare"
+            Write-Host "MAJOR_VERSION: $($version.Major)"
 
             if ($null -ne $matchingTag)
             {
@@ -121,14 +80,14 @@ jobs:
     if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     strategy:
       matrix:
-        os: 
-          - ubuntu-latest
+        os: [ubuntu-latest]
         platform:
           - linux/amd64
           - linux/arm64
     runs-on: ${{ matrix.os }}
     env:
-      KUBECTL_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
+      MAJOR_VERSION: ${{ needs.get-version-number.outputs.MAJOR_VERSION }}
     steps:
 
     - name: Prepare
@@ -158,12 +117,12 @@ jobs:
       id: build  
       uses: docker/build-push-action@v5
       with:
-        context: k8s/${{ env.PLATFORM_PAIR }}
+        context: base/${{ env.PLATFORM_PAIR }}
         platforms: ${{ matrix.platform }}
         provenance: false
         build-args: |
-          BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE }}
-          KUBECTL_MAJOR_MINOR_VERSION=${{ env.KUBECTL_MAJOR_MINOR_VERSION }}
+          PS_VERSION=${{ env.VERSION_NUMBER }}
+          PS_MAJOR_VERSION=${{ env.MAJOR_VERSION }}
         outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
     - name: Export digest
@@ -185,7 +144,7 @@ jobs:
     runs-on: windows-2022
     env:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
-      GCLOUD_CLI_VERSION: ${{ needs.get-version-number.outputs.GCLOUD_CLI_VERSION }}
+
     steps:
     - uses: actions/checkout@v4
        
@@ -196,8 +155,8 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_PAT }}
 
     - name: Build the win2022 image
-      working-directory: ./k8s
-      run: docker build ./windows-2022 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg GCLOUD_CLI_VERSION=${{ env.GCLOUD_CLI_VERSION}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
+      working-directory: ./base
+      run: docker build ./windows-2022 --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
       
     - name: Push the win2022 version-specific image
       run: docker push ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
@@ -225,7 +184,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
-      KUBECTL_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
@@ -242,7 +200,6 @@ jobs:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
             ${{ env.VERSION_NUMBER }}
-            ${{ env.KUBECTL_MAJOR_MINOR_VERSION }}
             latest
       - name: Login to Docker Hub
         uses: docker/login-action@v3
