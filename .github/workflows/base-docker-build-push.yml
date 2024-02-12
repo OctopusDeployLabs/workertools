@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-   REGISTRY_IMAGE: ${{ secrets.DOCKER_HUB_USER }}/workertools
+   REGISTRY_IMAGE: octopuslabs/workertools
 
 jobs:
 

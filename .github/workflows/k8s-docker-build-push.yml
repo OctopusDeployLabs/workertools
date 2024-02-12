@@ -12,7 +12,7 @@ on:
 
 env:
    REGISTRY_IMAGE_BASE: ${{ secrets.DOCKER_HUB_USER }}/workertools
-   REGISTRY_IMAGE: ${{ secrets.DOCKER_HUB_USER }}/k8s-workertools
+   REGISTRY_IMAGE: octopuslabs/k8s-workertools
 
 jobs:
 
