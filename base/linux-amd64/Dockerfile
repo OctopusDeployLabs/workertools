@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/runtime-deps:6.0 AS base
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/runtime-deps:8.0 AS base
 
 ARG PS_VERSION
 
