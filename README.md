@@ -172,6 +172,8 @@ A new image is built each time a new version of HashiCorp Vault is detected. The
 - `octopuslabs/vault-workertools:latest`
 - `octopuslabs/vault-workertools:VERSION`
 
+> Note: No windows/amd64 platform support is provided for this image.
+
 ## Support
 
 Please consider this repository provided as is.  If there are any issues please do not contact support.
