@@ -2,8 +2,6 @@
 
 This repository contains Dockerfiles used to build container images for common tools used with the [execution container](https://octopus.com/docs/projects/steps/execution-containers-for-workers) feature of Octopus Deploy.
 
-**Please consider this repository and any container images provided as-is. If there are any issues please do not contact the Octopus support team.**
-
 ## Platforms
 
 Images are typically available for:
@@ -192,4 +190,4 @@ You can retrieve a list of all available tags on [DockerHub](https://hub.docker.
 
 ## Support
 
-Please consider this repository provided as is.  If there are any issues please do not contact support.
+If you find a bug or encounter a problem with these images, please raise an [issue](https://github.com/OctopusDeployLabs/workertools/issues).
