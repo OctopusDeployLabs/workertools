@@ -6,7 +6,7 @@ ARG KUBECTL_MAJOR_MINOR_VERSION=1.29
 
 # Get kubectl
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
-RUN mkdir -m 755 /etc/apt/keyrings && \
+RUN mkdir -m 755 -p /etc/apt/keyrings && \
     curl -fsSL "https://pkgs.k8s.io/core:/stable:/v${KUBECTL_MAJOR_MINOR_VERSION}/deb/Release.key" | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg && \
     echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${KUBECTL_MAJOR_MINOR_VERSION}/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list && \
     apt-get update && apt-get install -y kubectl
