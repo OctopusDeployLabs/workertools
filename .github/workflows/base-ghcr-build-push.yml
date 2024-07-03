@@ -53,7 +53,7 @@ jobs:
             Write-Host "VERSION: $versionToCompare"
             Write-Host "MAJOR_VERSION: $($version.Major)"
 
-            if ($null -ne $matchingTag)
+            if ($null -ne $matchingTag -and $workerToolsTags.errors[0].code -ne "NAME_UNKNOWN")
             {
                 Write-Host "Docker container already has latest version"
                 echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
