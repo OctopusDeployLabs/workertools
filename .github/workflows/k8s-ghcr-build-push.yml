@@ -1,0 +1,265 @@
+name: Build k8s-workertools image
+
+permissions:
+  packages: write
+
+on:
+  push:
+    branches: 
+    - main
+    paths:
+    - k8s/**
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+env:
+   REGISTRY_IMAGE_BASE: ghcr.io/octopuslabs/workertools
+   REGISTRY_IMAGE: ghcr.io/octopuslabs/k8s-workertools
+
+jobs:
+
+  get-version-number:
+    runs-on: windows-latest
+    outputs:
+      CONTINUE: ${{ steps.check-version.outputs.CONTINUE }}
+      VERSION: ${{ steps.check-version.outputs.VERSION }}
+      GCLOUD_CLI_VERSION: ${{ steps.check-version.outputs.GCLOUD_CLI_VERSION }}
+      KUBECTL_MAJOR_MINOR_VERSION: ${{ steps.check-version.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
+      WIN2022_VERSION: ${{ steps.check-version.outputs.WIN2022_VERSION }}
+    steps:    
+    - uses: actions/checkout@v4
+    - id: check-version
+      name: Compare latest version with container
+      run: |
+        Write-Output "Getting GCLOUD CLI version (needed for gke-auth-plugin)"
+        $googleCloudSdkInfo = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/google/cloud-sdk/tags?page=1"
+        $otherImages = $googleCloudSdkInfo.results | Where-Object { $_.name -ine "latest" }
+        $latestTag = $googleCloudSdkInfo.results | Where-Object { $_.name -ieq "latest" }
+        
+        if($null -eq $latestTag)  {
+            throw "Couldnt find latest tag for Google Cloud SDK version from DockerHub"
+        }
+        
+        $latestTagImage = $latestTag.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active"} | Select-Object -First 1
+        if($null -eq $latestTagImage)  {
+            throw "Couldnt find latest tag image for Google Cloud SDK version for linux/amd64"
+        }
+        $latestDigest = $latestTagImage.digest
+        Write-Output "Found latest digest: $latestDigest"
+
+        $GCLOUD_CLI_VERSION = ""
+        foreach($result in $otherImages) {
+            $matchingImageDigest = $result.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
+            if($null -eq $matchingImageDigest) {
+                continue;
+            }
+            else {
+                $version = $result.name
+                Write-Output "Found version '$version' that matches digest: $latestDigest"
+                $versionSplit = $version.Split(".")
+                $GCLOUD_CLI_VERSION = "$($versionSplit[0]).$($versionSplit[1]).$($versionSplit[2])"
+                break;
+            }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($GCLOUD_CLI_VERSION)) {
+            throw "No GCLOUD CLI version with digest $latestDigest found"
+        }
+        else {
+            echo "GCLOUD_CLI_VERSION=$GCLOUD_CLI_VERSION" >> $env:GITHUB_OUTPUT
+        }
+
+        Write-Output "Getting kubectl version"
+        $chocoInformationRaw = choco info kubernetes-cli --limitoutput
+        $versionOutput = ($chocoInformationRaw.Split("|"))[1]
+
+        [System.Version]$version = $null
+        $versionParsed = [System.Version]::TryParse($versionOutput, [ref]$version)
+        if(-not $versionParsed) {
+            Write-Host "Unable to parse '$versionOutput' as a valid version. Won't continue"
+            echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
+        }
+        else {
+            $versionToCompare = "$($version.Major).$($version.Minor).$($version.Build)"
+            Write-Host "Parsed version as $versionToCompare"
+            # Major/minor version is used for linux dockerfile to install kubectl correctly
+            $majorMinorVersion = "$($version.Major).$($version.Minor)"
+            Write-Host "kubectl Major.Minor: $majorMinorVersion"
+
+            $workerToolsTags = Invoke-RestMethod "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list"
+            $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
+
+            echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
+            echo "KUBECTL_MAJOR_MINOR_VERSION=$majorMinorVersion" >> $env:GITHUB_OUTPUT
+
+            if ($null -ne $matchingTag)
+            {
+                Write-Host "Docker container already has latest version"
+                echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
+            }
+            else
+            {
+                Write-Host "We need to upgrade the container to $versionToCompare"            
+
+                Write-Host "Getting OS versions for windows 2022"
+                $win2022_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2022" | ConvertFrom-Json)
+                $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
+                Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
+
+                if([string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
+                  throw "Could not establish OS versions for windows 2022 needed for docker manifest"
+                }
+
+                echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT
+                
+                Write-Host "We have everything we need, continuing."
+                echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
+            }
+        }
+      shell: powershell
+
+  build-linux:
+    needs: [get-version-number]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    strategy:
+      matrix:
+        os: 
+          - ubuntu-latest
+        platform:
+          - linux/amd64
+          - linux/arm64
+    runs-on: ${{ matrix.os }}
+    env:
+      KUBECTL_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
+    steps:
+
+    - name: Prepare
+      run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV 
+          echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV 
+
+    - name: Checkout  
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: https://ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push by digest
+      id: build  
+      uses: docker/build-push-action@v5
+      with:
+        context: k8s/${{ env.PLATFORM_PAIR }}
+        platforms: ${{ matrix.platform }}
+        provenance: false
+        build-args: |
+          BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE }}
+          KUBECTL_MAJOR_MINOR_VERSION=${{ env.KUBECTL_MAJOR_MINOR_VERSION }}
+        outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+    - name: Export digest
+      run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+                    
+    - name: Upload digest
+      uses: actions/upload-artifact@v4
+      with:
+        name: digests-${{ env.PLATFORM_PAIR }}
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
+  build-win-2022:
+    needs: [get-version-number]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    runs-on: windows-2022
+    env:
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
+      GCLOUD_CLI_VERSION: ${{ needs.get-version-number.outputs.GCLOUD_CLI_VERSION }}
+    steps:
+    - uses: actions/checkout@v4
+       
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: https://ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build the win2022 image
+      working-directory: ./k8s
+      run: docker build ./windows-2022 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg GCLOUD_CLI_VERSION=${{ env.GCLOUD_CLI_VERSION}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
+      
+    - name: Push the win2022 version-specific image
+      run: docker push ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
+
+    - name: Export windows digest
+      run: |
+        New-Item -Type Directory -Path "$($env:TEMP)/digests" -Force
+        $imageManifestOutput = $(docker manifest inspect --verbose ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022)
+        $fullDigest = ($imageManifestOutput | ConvertFrom-Json).Descriptor.digest
+        $digest = $fulldigest -Replace "sha256:", ""
+        $winDigestPath = "$($env:TEMP)/digests/$digest"
+        New-Item -Type File -Path $winDigestPath
+        echo "WIN_DIGEST_PATH=$($env:TEMP)/digests" >> $env:GITHUB_ENV
+    - name: Upload windows digest
+      uses: actions/upload-artifact@v4
+      with:
+        name: digests-windows-amd64
+        path: ${{ env.WIN_DIGEST_PATH }}/*
+        if-no-files-found: error
+        retention-days: 1
+
+  merge:
+    needs: [get-version-number, build-linux, build-win-2022]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
+      KUBECTL_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            ${{ env.VERSION_NUMBER }}
+            ${{ env.KUBECTL_MAJOR_MINOR_VERSION }}
+            latest
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)          
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}

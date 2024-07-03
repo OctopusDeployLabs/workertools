@@ -1,0 +1,208 @@
+name: Build flyway-workertools image
+
+permissions:
+  packages: write
+
+on:
+  push:
+    branches: 
+    - main
+    paths:
+    - flyway/**
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+env:
+   REGISTRY_IMAGE_BASE: ghcr.io/octopuslabs/workertools
+   REGISTRY_IMAGE: ghcr.io/octopuslabs/flyway-workertools
+
+jobs:
+
+  get-version-number:
+    runs-on: windows-latest
+    outputs:
+      CONTINUE: ${{ steps.check-version.outputs.CONTINUE }}
+      VERSION: ${{ steps.check-version.outputs.VERSION }}
+      WIN2022_VERSION: ${{ steps.check-version.outputs.WIN2022_VERSION }}
+    steps:    
+    - uses: actions/checkout@v4
+    - id: check-version
+      name: Compare latest version with container
+      run: |
+        $manifestDataRaw = Invoke-WebRequest "https://download.red-gate.com/maven/release/org/flywaydb/enterprise/flyway-commandline/maven-metadata.xml"
+        $manifestData = [Xml]$manifestDataRaw
+
+        $latestFlywayVersion = $manifestData.metadata.versioning.release
+
+        $workerToolsTags = Invoke-RestMethod "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list"
+        $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
+
+        echo "VERSION=$latestFlywayVersion" >> $env:GITHUB_OUTPUT
+
+        if ($null -ne $matchingTag)
+        {
+            Write-Host "Docker container already has latest version of flyway"
+            echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
+        }
+        else
+        {
+            Write-Host "We need to upgrade the flyway container to $latestFlywayVersion"            
+
+            Write-Host "Getting OS versions for windows 2022"
+            $win2022_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2022" | ConvertFrom-Json)
+            $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
+            Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
+
+            if([string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
+              throw "Could not establish OS versions for windows 2022 needed for docker manifest"
+            }
+
+            echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT
+
+            Write-Host "We have everything we need, continuing."
+            echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
+        }
+      shell: powershell
+
+  build-linux:
+    needs: [get-version-number]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    strategy:
+      matrix:
+        os: 
+          - ubuntu-latest
+        platform:
+          - linux/amd64
+          - linux/arm64
+    runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ needs.get-version-number.outputs.VERSION }}
+    steps:
+
+    - name: Prepare
+      run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV 
+          echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV 
+
+    - name: Checkout  
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: https://ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push by digest
+      id: build  
+      uses: docker/build-push-action@v5
+      with:
+        context: flyway/${{ env.PLATFORM_PAIR }}
+        platforms: ${{ matrix.platform }}
+        provenance: false
+        build-args: |
+          BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE }}
+          FLYWAY_VERSION=${{ env.VERSION }}
+        outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+    - name: Export digest
+      run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+                    
+    - name: Upload digest
+      uses: actions/upload-artifact@v4
+      with:
+        name: digests-${{ env.PLATFORM_PAIR }}
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
+  build-win-2022:
+    needs: [get-version-number]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    runs-on: windows-2022
+    env:
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
+    steps:
+    - uses: actions/checkout@v4
+       
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: https://ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build the win2022 image
+      working-directory: ./flyway
+      run: docker build ./windows-2022 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg FLYWAY_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
+      
+    - name: Push the win2022 version-specific image
+      run: docker push ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
+
+    - name: Export windows digest
+      run: |
+        New-Item -Type Directory -Path "$($env:TEMP)/digests" -Force
+        $imageManifestOutput = $(docker manifest inspect --verbose ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022)
+        $fullDigest = ($imageManifestOutput | ConvertFrom-Json).Descriptor.digest
+        $digest = $fulldigest -Replace "sha256:", ""
+        $winDigestPath = "$($env:TEMP)/digests/$digest"
+        New-Item -Type File -Path $winDigestPath
+        echo "WIN_DIGEST_PATH=$($env:TEMP)/digests" >> $env:GITHUB_ENV
+    - name: Upload windows digest
+      uses: actions/upload-artifact@v4
+      with:
+        name: digests-windows-amd64
+        path: ${{ env.WIN_DIGEST_PATH }}/*
+        if-no-files-found: error
+        retention-days: 1
+
+  merge:
+    needs: [get-version-number, build-linux, build-win-2022]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            ${{ env.VERSION_NUMBER }}
+            latest
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)          
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
