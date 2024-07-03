@@ -35,7 +35,8 @@ jobs:
 
         $latestFlywayVersion = $manifestData.metadata.versioning.release
 
-        $workerToolsTags = Invoke-RestMethod "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list"
+        $token = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
+        $workerToolsTags = Invoke-RestMethod "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers $headers  @{Authorization="Bearer $token"}
         $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
 
         echo "VERSION=$latestFlywayVersion" >> $env:GITHUB_OUTPUT
