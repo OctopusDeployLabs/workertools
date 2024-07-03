@@ -87,8 +87,8 @@ jobs:
             $majorMinorVersion = "$($version.Major).$($version.Minor)"
             Write-Host "kubectl Major.Minor: $majorMinorVersion"
 
-            $token = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
-            $workerToolsTags = Invoke-RestMethod "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers $headers  @{Authorization="Bearer $token"}
+            $token = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
+            $workerToolsTags = Invoke-RestMethod -Uri "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers @{Authorization="Bearer $token"} -SkipHttpErrorCheck
             $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
 
             echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
@@ -118,7 +118,7 @@ jobs:
                 echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
             }
         }
-      shell: powershell
+      shell: pwsh
 
   build-linux:
     needs: [get-version-number]
