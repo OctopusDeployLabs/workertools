@@ -1,4 +1,4 @@
-name: Build aws-workertools image
+name: Build GHCR aws-workertools image
 
 permissions:
   packages: write

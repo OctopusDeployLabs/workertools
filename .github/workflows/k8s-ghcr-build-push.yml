@@ -1,4 +1,4 @@
-name: Build k8s-workertools image
+name: Build GHCR k8s-workertools image
 
 permissions:
   packages: write

@@ -1,4 +1,4 @@
-name: Build azure-workertools image
+name: Build GHCR azure-workertools image
 
 permissions:
   packages: write

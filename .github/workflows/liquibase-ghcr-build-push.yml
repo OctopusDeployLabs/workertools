@@ -1,4 +1,4 @@
-name: Build liquibase-workertools image
+name: Build GHCR liquibase-workertools image
 
 permissions:
   packages: write

@@ -1,4 +1,4 @@
-name: Build vault-workertools image
+name: Build GHCR vault-workertools image
 
 permissions:
   packages: write

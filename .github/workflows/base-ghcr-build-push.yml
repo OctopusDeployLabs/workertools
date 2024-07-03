@@ -1,4 +1,4 @@
-name: Build workertools base image
+name: Build GHCR workertools base image
 
 permissions:
   packages: write
