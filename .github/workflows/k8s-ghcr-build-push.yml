@@ -14,8 +14,8 @@ on:
   workflow_dispatch:
 
 env:
-   REGISTRY_IMAGE_BASE: ghcr.io/octopuslabs/workertools
-   REGISTRY_IMAGE: ghcr.io/octopuslabs/k8s-workertools
+   REGISTRY_IMAGE_BASE: ${{ github.repository_owner }}/workertools
+   REGISTRY_IMAGE: ${{ github.repository_owner }}/k8s-workertools
 
 jobs:
 

@@ -1,4 +1,4 @@
-name: Build flyway-workertools image
+name: Build gcp-workertools image
 
 permissions:
   packages: write
@@ -8,14 +8,14 @@ on:
     branches: 
     - main
     paths:
-    - flyway/**
+    - gcp/**
   schedule:
-    - cron: '0 5 * * *'
+    - cron: '0 4 * * *'
   workflow_dispatch:
 
 env:
    REGISTRY_IMAGE_BASE: ${{ github.repository_owner }}/workertools
-   REGISTRY_IMAGE: ${{ github.repository_owner }}/flyway-workertools
+   REGISTRY_IMAGE: ${{ github.repository_owner }}/gcp-workertools
 
 jobs:
 
@@ -30,28 +30,58 @@ jobs:
     - id: check-version
       name: Compare latest version with container
       run: |
-        $manifestDataRaw = Invoke-WebRequest "https://download.red-gate.com/maven/release/org/flywaydb/enterprise/flyway-commandline/maven-metadata.xml"
-        $manifestData = [Xml]$manifestDataRaw
+        Write-Output "Getting GCLOUD CLI version (needed for gke-auth-plugin)"
+        $googleCloudSdkInfo = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/google/cloud-sdk/tags?page=1"
+        $otherImages = $googleCloudSdkInfo.results | Where-Object { $_.name -ine "latest" }
+        $latestTag = $googleCloudSdkInfo.results | Where-Object { $_.name -ieq "latest" }
+        
+        if($null -eq $latestTag)  {
+            throw "Couldnt find latest tag for Google Cloud SDK version from DockerHub"
+        }
+        
+        $latestTagImage = $latestTag.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active"} | Select-Object -First 1
+        if($null -eq $latestTagImage)  {
+            throw "Couldnt find latest tag image for Google Cloud SDK version for linux/amd64"
+        }
+        $latestDigest = $latestTagImage.digest
+        Write-Output "Found latest digest: $latestDigest"
 
-        $latestFlywayVersion = $manifestData.metadata.versioning.release
+        $versionToCompare = ""
+        foreach($result in $otherImages) {
+            $matchingImageDigest = $result.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
+            if($null -eq $matchingImageDigest) {
+                continue;
+            }
+            else {
+                $version = $result.name
+                Write-Output "Found version '$version' that matches digest: $latestDigest"
+                $versionSplit = $version.Split(".")
+                $versionToCompare = "$($versionSplit[0]).$($versionSplit[1]).$($versionSplit[2])"
+                break;
+            }
+        }
 
-        $token = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
-        $workerToolsTags = Invoke-RestMethod "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers $headers  @{Authorization="Bearer $token"}
-        $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
+        if ([string]::IsNullOrWhiteSpace($versionToCompare)) {
+            throw "No version with digest $latestDigest found"
+        }
 
-        echo "VERSION=$latestFlywayVersion" >> $env:GITHUB_OUTPUT
+            $token = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
+            $workerToolsTags = Invoke-RestMethod -Uri "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers @{Authorization="Bearer $token"} -SkipHttpErrorCheck
+            $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
 
-        if ($null -ne $matchingTag)
+            echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
+
+            if ($null -ne $matchingTag -and $workerToolsTags.errors[0].code -ne "NAME_UNKNOWN")
         {
-            Write-Host "Docker container already has latest version of flyway"
+            Write-Host "Docker container already has latest version"
             echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
         }
         else
         {
-            Write-Host "We need to upgrade the flyway container to $latestFlywayVersion"            
+            Write-Host "We need to upgrade the container to $versionToCompare"            
 
             Write-Host "Getting OS versions for windows 2022"
-            $win2022_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2022" | ConvertFrom-Json)
+            $win2022_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2022" | ConvertFrom-Json)
             $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
             Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
 
@@ -64,7 +94,7 @@ jobs:
             Write-Host "We have everything we need, continuing."
             echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
         }
-      shell: powershell
+      shell: pwsh
 
   build-linux:
     needs: [get-version-number]
@@ -78,7 +108,7 @@ jobs:
           - linux/arm64
     runs-on: ${{ matrix.os }}
     env:
-      VERSION: ${{ needs.get-version-number.outputs.VERSION }}
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}-0
     steps:
 
     - name: Prepare
@@ -109,12 +139,12 @@ jobs:
       id: build  
       uses: docker/build-push-action@v5
       with:
-        context: flyway/${{ env.PLATFORM_PAIR }}
+        context: gcp/${{ env.PLATFORM_PAIR }}
         platforms: ${{ matrix.platform }}
         provenance: false
         build-args: |
           BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE }}
-          FLYWAY_VERSION=${{ env.VERSION }}
+          GCLOUD_CLI_VERSION=${{ env.VERSION_NUMBER }}
         outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
     - name: Export digest
@@ -147,8 +177,8 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build the win2022 image
-      working-directory: ./flyway
-      run: docker build ./windows-2022 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg FLYWAY_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
+      working-directory: ./gcp
+      run: docker build ./windows-2022 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg GCLOUD_CLI_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
       
     - name: Push the win2022 version-specific image
       run: docker push ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022

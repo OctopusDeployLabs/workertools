@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 env:
-   REGISTRY_IMAGE: ghcr.io/octopuslabs/workertools
+   REGISTRY_IMAGE: ${{ github.repository_owner }}/workertools
 
 jobs:
 
