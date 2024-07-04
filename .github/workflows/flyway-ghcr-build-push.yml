@@ -35,7 +35,7 @@ jobs:
 
         $versionToCompare = $manifestData.metadata.versioning.release
 
-        $token = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
+        $token = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
         $workerToolsTags = Invoke-RestMethod "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers @{Authorization="Bearer $token"} -SkipHttpErrorCheck
         $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
 
