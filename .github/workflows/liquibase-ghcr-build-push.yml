@@ -56,7 +56,7 @@ jobs:
             $workerToolsTags = Invoke-RestMethod -Uri "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers @{Authorization="Bearer $token"} -SkipHttpErrorCheck
             $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
 
-            echo "VERSION=$latestLiquibaseVersion" >> $env:GITHUB_OUTPUT
+            echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
 
             if ($null -ne $matchingTag -or ($null -ne $workerToolsTags.errors -and $workerToolsTags.errors[0].code -ne "NAME_UNKNOWN"))
             {
@@ -65,7 +65,7 @@ jobs:
             }
             else
             {
-                Write-Host "We need to upgrade the liquibase container to $latestLiquibaseVersion"
+                Write-Host "We need to upgrade the liquibase container to $versionToCompare"
                 Write-Host "We have everything we need, continuing."
                 echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
             }
