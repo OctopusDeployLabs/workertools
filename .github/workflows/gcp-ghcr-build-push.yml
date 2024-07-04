@@ -71,7 +71,7 @@ jobs:
 
             echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
 
-            if ($null -ne $matchingTag -and $null -ne $workerToolsTags.errors -and $workerToolsTags.errors[0].code -ne "NAME_UNKNOWN")
+            if ($null -ne $matchingTag -or ($null -ne $workerToolsTags.errors -and $workerToolsTags.errors[0].code -ne "NAME_UNKNOWN"))
         {
             Write-Host "Docker container already has latest version"
             echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
