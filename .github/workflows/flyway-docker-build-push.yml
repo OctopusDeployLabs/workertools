@@ -30,12 +30,12 @@ jobs:
         $manifestDataRaw = Invoke-WebRequest "https://download.red-gate.com/maven/release/org/flywaydb/enterprise/flyway-commandline/maven-metadata.xml"
         $manifestData = [Xml]$manifestDataRaw
 
-        $latestFlywayVersion = $manifestData.metadata.versioning.release
+        $versionToCompare = $manifestData.metadata.versioning.release
 
         $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/${{ env.REGISTRY_IMAGE }}/tags?page_size=50"
-        $matchingTag = $workerToolsTags.results | Where-Object { $_.name -eq $latestFlywayVersion }
+        $matchingTag = $workerToolsTags.results | Where-Object { $_.name -eq $versionToCompare }
 
-        echo "VERSION=$latestFlywayVersion" >> $env:GITHUB_OUTPUT
+        echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
 
         if ($null -ne $matchingTag)
         {
@@ -44,7 +44,7 @@ jobs:
         }
         else
         {
-            Write-Host "We need to upgrade the flyway container to $latestFlywayVersion"            
+            Write-Host "We need to upgrade the flyway container to $versionToCompare"            
 
             Write-Host "Getting OS versions for windows 2022"
             $win2022_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2022" | ConvertFrom-Json)
