@@ -1,4 +1,4 @@
-name: Build flyway-workertools image
+name: Build GHCR flyway-workertools image
 
 permissions:
   packages: write
@@ -36,12 +36,12 @@ jobs:
         $versionToCompare = $manifestData.metadata.versioning.release
 
         $token = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
-        $workerToolsTags = Invoke-RestMethod "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers $headers  @{Authorization="Bearer $token"}
+        $workerToolsTags = Invoke-RestMethod "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers @{Authorization="Bearer $token"} -SkipHttpErrorCheck
         $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
 
         echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
 
-        if ($null -ne $matchingTag)
+        if ($null -ne $matchingTag -or ($null -ne $workerToolsTags.errors -and $workerToolsTags.errors[0].code -ne "NAME_UNKNOWN"))
         {
             Write-Host "Docker container already has latest version of flyway"
             echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
@@ -64,7 +64,7 @@ jobs:
             Write-Host "We have everything we need, continuing."
             echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
         }
-      shell: powershell
+      shell: pwsh
 
   build-linux:
     needs: [get-version-number]
