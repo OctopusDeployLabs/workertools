@@ -198,11 +198,12 @@ This image contains all the necessary tooling to run [ArgoCD CLI](https://argo-c
 
 A new image is built each time a new version of ArgoCD CLI is detected. The version numbers will be based on the version of the ArgoCD CLI.
 
+> Note: No windows/amd64 platform support is provided for this image.
+
 #### Tags
 
 - `octopuslabs/argocd-workertools:latest`
 - `octopuslabs/argocd-workertools:VERSION`
-- `octopuslabs/argocd-workertools:VERSION-win.2022`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/argocd-workertools/tags).
 
