@@ -25,6 +25,7 @@ The following images are built from this repository:
 - [Liquibase workertools](#liquibase-workertools) (`octopuslabs/liquibase-workertools`)
 - [Terraform workertools](#terraform-workertools) (`octopuslabs/terraform-workertools`)
 - [HashiCorp Vault workertools](#vault-workertools) (`octopuslabs/vault-workertools`)
+- [ArgoCD workertools](#argocd-workertools) (`octopuslabs/argocd-workertools`)
 
 ### Base workertools
 
@@ -187,6 +188,22 @@ A new image is built each time a new version of HashiCorp Vault is detected. The
 - `octopuslabs/vault-workertools:VERSION`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/vault-workertools/tags).
+
+### ArgoCD workertools
+
+This image contains all the necessary tooling to run [ArgoCD CLI](https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd/) commands with Octopus Deploy:
+
+- Kubectl
+- ArgoCD CLI
+
+A new image is built each time a new version of ArgoCD CLI is detected. The version numbers will be based on the version of the ArgoCD CLI.
+
+#### Tags
+
+- `octopuslabs/argocd-workertools:latest`
+- `octopuslabs/argocd-workertools:VERSION`
+
+You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/argocd-workertools/tags).
 
 ## Support
 
