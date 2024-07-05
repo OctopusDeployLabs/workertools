@@ -72,7 +72,9 @@ jobs:
                     # Major/minor version is used for linux dockerfile to install kubectl correctly
                     $majorMinorVersion = "$($version.Major).$($version.Minor)"
                     Write-Host "kubectl Major.Minor: $majorMinorVersion"
-
+                    
+                    echo "KUBECTL_MAJOR_MINOR_VERSION=$majorMinorVersion" >> $env:GITHUB_OUTPUT
+                    
                     Write-Host "Getting OS versions for windows 2022"
                     $win2022_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2022" | ConvertFrom-Json)
                     $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
