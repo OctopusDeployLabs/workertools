@@ -202,6 +202,7 @@ A new image is built each time a new version of ArgoCD CLI is detected. The vers
 
 - `octopuslabs/argocd-workertools:latest`
 - `octopuslabs/argocd-workertools:VERSION`
+- `octopuslabs/argocd-workertools:VERSION-win.2022`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/argocd-workertools/tags).
 
