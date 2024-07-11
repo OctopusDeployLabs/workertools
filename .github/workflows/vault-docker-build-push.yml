@@ -21,7 +21,6 @@ jobs:
     outputs:
       CONTINUE: ${{ steps.check-version.outputs.CONTINUE }}
       VERSION: ${{ steps.check-version.outputs.VERSION }}
-      WIN2022_VERSION: ${{ steps.check-version.outputs.WIN2022_VERSION }}
     steps:    
     - uses: actions/checkout@v4
     - id: check-version
@@ -53,19 +52,7 @@ jobs:
             }
             else
             {
-                Write-Host "We need to upgrade the container to $versionToCompare"            
-
-                Write-Host "Getting OS versions for windows 2022"
-                $win2022_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2022" | ConvertFrom-Json)
-                $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
-                Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
-
-                if([string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
-                  throw "Could not establish OS versions for windows 2022 needed for docker manifest"
-                }
-
-                echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT
-                
+                Write-Host "We need to upgrade the container to $versionToCompare"                            
                 Write-Host "We have everything we need, continuing."
                 echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
             }
