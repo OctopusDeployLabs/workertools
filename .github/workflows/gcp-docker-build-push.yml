@@ -7,7 +7,7 @@ on:
     paths:
     - gcp/**
   schedule:
-    - cron: '0 4 * * *'
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 env:
