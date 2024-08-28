@@ -26,6 +26,7 @@ The following images are built from this repository:
 - [Terraform workertools](#terraform-workertools) (`octopuslabs/terraform-workertools`)
 - [HashiCorp Vault workertools](#vault-workertools) (`octopuslabs/vault-workertools`)
 - [ArgoCD workertools](#argocd-workertools) (`octopuslabs/argocd-workertools`)
+- [GitHub CLI workertools](#github-workertools) (`octopuslabs/github-workertools`)
 
 ### Base workertools
 
@@ -206,6 +207,25 @@ A new image is built each time a new version of ArgoCD CLI is detected. The vers
 - `octopuslabs/argocd-workertools:VERSION`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/argocd-workertools/tags).
+
+
+### GitHub CLI workertools
+
+This image contains all the necessary tooling to run the [GitHub CLI](https://github.com/cli/cli) with Octopus Deploy:
+
+- Git
+- GitHub CLI
+
+A new image is built each time a new version of the GitHub CLI is detected. The version numbers will be based on the version of the GitHub CLI.
+
+> Note: No windows/amd64 platform support is provided for this image.
+
+#### Tags
+
+- `octopuslabs/github-workertools:latest`
+- `octopuslabs/github-workertools:VERSION`
+
+You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/github-workertools/tags).
 
 ## Support
 
