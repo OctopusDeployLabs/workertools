@@ -30,8 +30,5 @@ RUN curl -L https://download.red-gate.com/maven/release/org/flywaydb/enterprise/
   # Make it so any user can call /flyway/flyway 
   && ln -s /flyway/flyway /usr/local/bin/flyway
 
-# Download Microsoft Managed Identity jar
-RUN curl -o /flyway/lib/azure-identity-1.11.1.jar https://repo1.maven.org/maven2/com/azure/azure-identity/1.11.1/azure-identity-1.11.1.jar 
-
 # Octopus expects to start in the default directory
 WORKDIR /
