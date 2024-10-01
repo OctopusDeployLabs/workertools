@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY_IMAGE: ghcr.io/octopuslabs/python-workertools
+  REGISTRY_IMAGE: ghcr.io/octopusdeploylabs/python-workertools
 
 jobs:
   build-linux:
