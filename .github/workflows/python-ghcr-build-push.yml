@@ -9,6 +9,7 @@ on:
     - main
     paths:
     - python/**
+    - .github/workflows/python-ghcr-build-push.yml
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:

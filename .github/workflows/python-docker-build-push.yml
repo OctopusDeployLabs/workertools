@@ -6,6 +6,7 @@ on:
     - main
     paths:
     - python/**
+    - .github/workflows/python-docker-build-push.yml
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
