@@ -13,6 +13,9 @@ on:
     - cron: '0 3 * * *'
   workflow_dispatch:
 
+env:
+  REGISTRY_IMAGE: octopuslabs/python-workertools
+
 jobs:
   build-linux:
     strategy:
