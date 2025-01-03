@@ -164,8 +164,47 @@ jobs:
         if-no-files-found: error
         retention-days: 1
 
+  build-win-2019:
+    needs: [get-version-number]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    runs-on: windows-2019
+    env:
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
+    steps:
+    - uses: actions/checkout@v4
+       
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_HUB_USER }}
+        password: ${{ secrets.DOCKER_HUB_PAT }}
+
+    - name: Build the win2019 image
+      working-directory: ./flyway
+      run: docker build ./windows-2019 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg FLYWAY_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2019
+      
+    - name: Push the win2019 version-specific image
+      run: docker push ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2019
+
+    - name: Export windows digest
+      run: |
+        New-Item -Type Directory -Path "$($env:TEMP)/digests" -Force
+        $imageManifestOutput = $(docker manifest inspect --verbose ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2019)
+        $fullDigest = ($imageManifestOutput | ConvertFrom-Json).Descriptor.digest
+        $digest = $fulldigest -Replace "sha256:", ""
+        $winDigestPath = "$($env:TEMP)/digests/$digest"
+        New-Item -Type File -Path $winDigestPath
+        echo "WIN_DIGEST_PATH=$($env:TEMP)/digests" >> $env:GITHUB_ENV
+    - name: Upload windows digest
+      uses: actions/upload-artifact@v4
+      with:
+        name: digests-windows-amd64
+        path: ${{ env.WIN_DIGEST_PATH }}/*
+        if-no-files-found: error
+        retention-days: 1
+
   merge:
-    needs: [get-version-number, build-linux, build-win-2022]
+    needs: [get-version-number, build-linux, build-win-2022, build-win-2019]
     if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     runs-on: ubuntu-latest
     env:
