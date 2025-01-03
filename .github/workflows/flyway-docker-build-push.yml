@@ -181,7 +181,8 @@ jobs:
 
     - name: Build the win2019 image
       working-directory: ./flyway
-      run: docker build ./windows-2019 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg FLYWAY_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2019
+      #run: docker build ./windows-2019 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg FLYWAY_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2019
+      run: docker build ./windows-2019 --build-arg BASE_IMAGE=7.4.6-win.2019 --build-arg FLYWAY_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2019
       
     - name: Push the win2019 version-specific image
       run: docker push ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2019
