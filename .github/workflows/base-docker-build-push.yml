@@ -180,7 +180,7 @@ jobs:
 
   build-win-2019:
     needs: [get-version-number]
-    if: ${{ needs.get-version-number.outputs.CONTINUE == 'No' }}
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     runs-on: windows-2019
     env:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
