@@ -1,7 +1,7 @@
 # escape=`
 ARG BASE_IMAGE
 #FROM --platform=windows/amd64 ${BASE_IMAGE}:ltsc2019
-FROM octopuslabs/workertoos:7.4.6-win.2019
+FROM octopuslabs/workertools:7.4.6-win.2019
 SHELL ["powershell", "-Command"]
 
 ARG FLYWAY_VERSION=10.7.1
