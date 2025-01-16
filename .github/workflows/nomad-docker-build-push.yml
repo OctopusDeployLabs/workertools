@@ -22,65 +22,55 @@ jobs:
     outputs:
       CONTINUE: ${{ steps.check-version.outputs.CONTINUE }}
       VERSION: ${{ steps.check-version.outputs.VERSION }}
+      NOMAD_MAJOR_MINOR_VERSION: ${{ steps.check-version.outputs.NOMAD_MAJOR_MINOR_VERSION }}
     steps:    
     - uses: actions/checkout@v4
     - id: check-version
       name: Compare latest version with container
       run: |
         Write-Output "Getting Nomad CLI version" 
-        $nomadCliInfo = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/hashicorp/nomad/tags?page=1"
-        # We have to sort the images and remove tags like "1.8-ent" to get the latest semver version.
-        $otherImages = $nomadCliInfo.results | Where-Object { $_.name -ine "latest" -and $_.name -notlike "*-ent*" } | Sort-Object -Property @{Expression={[System.Version]$_.name}} -Descending | Select-Object -First 5
-        $latestTag = $nomadCliInfo.results | Where-Object { $_.name -ieq "latest" }
-        
-        if($null -eq $latestTag)  {
-            throw "Couldnt find latest tag for the Nomad CLI version from DockerHub"
+        $nomadLatestReleases = @(Invoke-RestMethod "https://api.github.com/repos/hashicorp/nomad/releases/latest")
+        if ($null -eq $nomadLatestReleases -or $nomadLatestReleases.Count -eq 0) {
+            throw "Couldnt find latest release for the Nomad CLI from GitHub"
         }
-        
-        $latestTagImage = $latestTag.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active"} | Select-Object -First 1
-        if($null -eq $latestTagImage)  {
-            throw "Couldnt find latest tag image for the Nomad CLI version for linux/amd64"
-        }
-        $latestDigest = $latestTagImage.digest
-        Write-Output "Found latest digest: $latestDigest"
 
-        $versionToCompare = ""
-        foreach($result in $otherImages) {
-            $matchingImageDigest = $result.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
-            if($null -eq $matchingImageDigest) {
-                continue;
+        $latestRelease = ($nomadLatestReleases | Select-Object -First 1)
+        $latestVersion = $latestRelease.tag_name -Replace "v", ""
+
+        [System.Version]$version = $null
+        $versionParsed = [System.Version]::TryParse($latestVersion, [ref]$version)
+        if (-not $versionParsed) {
+            Write-Output "Unable to parse '$latestVersion' as a valid version. Won't continue"
+            #echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
+        }
+        else {
+            $versionToCompare = "$($version.Major).$($version.Minor).$($version.Build)"
+            $majorMinorVersion = "$($version.Major).$($version.Minor)"
+                    
+            Write-Output "Parsed version as $versionToCompare"
+            Write-Output "Nomad Major.Minor: $majorMinorVersion"
+            $workerToolsTags = (Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/${{ env.REGISTRY_IMAGE }}/tags?page_size=50")
+            $matchingTag = $workerToolsTags.results | Where-Object { $_.name -eq $versionToCompare }
+
+            if ($null -ne $matchingTag) {
+                Write-Output "Docker container already has the latest version of nomad"
+                #echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
             }
             else {
-                $version = $result.name
-                Write-Output "Found version '$version' that matches digest: $latestDigest"
-                $versionSplit = $version.Split(".")
-                $versionToCompare = "$($versionSplit[0]).$($versionSplit[1]).$($versionSplit[2])"
-                break;
+                if ($workerToolsTags.count -eq 0) {
+                    Write-Output "Docker container not found. This is probably the first run."
+                }
+
+                Write-Output "We need to create the nomad container for version $versionToCompare."
+                Write-Output "We have everything we need, continuing."
+                echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
+                echo "NOMAD_MAJOR_MINOR_VERSION=$majorMinorVersion" >> $env:GITHUB_OUTPUT
+                echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
             }
-        }
-
-        if ([string]::IsNullOrWhiteSpace($versionToCompare)) {
-            throw "No version with digest $latestDigest found"
-        }
-
-        $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/${{ env.REGISTRY_IMAGE }}/tags?page_size=50"
-        $matchingTag = $workerToolsTags.results | Where-Object { $_.name -ieq $versionToCompare }
-
-        if ($null -ne $matchingTag)
-        {
-            Write-Host "Docker container already has latest version"
-            echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
-        }
-        else
-        {
-            Write-Host "We need to upgrade the container to $versionToCompare"            
-            Write-Host "We have everything we need, continuing."
-            echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
-            echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
         }
       shell: pwsh
 
-  build-linux:
+  build-nomad-enterprise:
     needs: [get-version-number]
     if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     strategy:
@@ -92,7 +82,7 @@ jobs:
           - linux/arm64
     runs-on: ${{ matrix.os }}
     env:
-      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}-0
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}+ent-1
     steps:
 
     - name: Prepare
@@ -127,6 +117,110 @@ jobs:
         provenance: false
         build-args: |
           BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE }}
+          NOMAD_PACKAGE=nomad-enterprise
+          NOMAD_VERSION=${{ env.VERSION_NUMBER }}
+        outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+    - name: Export enterprise digest
+      run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+                    
+    - name: Upload enterprise digest
+      uses: actions/upload-artifact@v4
+      with:
+        name: enterprise-digest-${{ env.PLATFORM_PAIR }}
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
+
+  merge-nomad-enterprise:
+    needs: [get-version-number, build-nomad-enterprise]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
+      NOMAD_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.VERSION }}
+    steps:
+      - name: Download enterprise digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: enterprise-digest-*
+          merge-multiple: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            ${{ env.NOMAD_MAJOR_MINOR_VERSION }}-ent
+            ${{ env.VERSION_NUMBER }}-ent
+            latest
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PAT }}
+      - name: Create enterprise manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)          
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
+build-nomad:
+    needs: [get-version-number]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    strategy:
+      matrix:
+        os: 
+          - ubuntu-latest
+        platform:
+          - linux/amd64
+          - linux/arm64
+    runs-on: ${{ matrix.os }}
+    env:
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}-1
+    steps:
+
+    - name: Prepare
+      run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV 
+          echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV 
+
+    - name: Checkout  
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_HUB_USER }}
+        password: ${{ secrets.DOCKER_HUB_PAT }}
+
+    - name: Build and push by digest
+      id: build  
+      uses: docker/build-push-action@v5
+      with:
+        context: nomad/${{ env.PLATFORM_PAIR }}
+        platforms: ${{ matrix.platform }}
+        provenance: false
+        build-args: |
+          BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE }}
+          NOMAD_PACKAGE=nomad
           NOMAD_VERSION=${{ env.VERSION_NUMBER }}
         outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
@@ -139,23 +233,24 @@ jobs:
     - name: Upload digest
       uses: actions/upload-artifact@v4
       with:
-        name: digests-${{ env.PLATFORM_PAIR }}
+        name: digest-${{ env.PLATFORM_PAIR }}
         path: /tmp/digests/*
         if-no-files-found: error
         retention-days: 1
 
-  merge:
-    needs: [get-version-number, build-linux]
+  merge-nomad:
+    needs: [get-version-number, build-nomad]
     if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     runs-on: ubuntu-latest
     env:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
+      NOMAD_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.VERSION }}
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests
-          pattern: digests-*
+          pattern: digest-*
           merge-multiple: true
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -165,18 +260,18 @@ jobs:
         with:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
+            ${{ env.NOMAD_MAJOR_MINOR_VERSION }}
             ${{ env.VERSION_NUMBER }}
-            latest
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_PAT }}
-      - name: Create manifest list and push
+      - name: Create enterprise manifest list and push
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)          
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}          
