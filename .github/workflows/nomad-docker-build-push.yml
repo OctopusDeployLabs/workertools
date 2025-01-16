@@ -173,7 +173,7 @@ jobs:
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
-build-nomad:
+  build-nomad:
     needs: [get-version-number]
     if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     strategy:
