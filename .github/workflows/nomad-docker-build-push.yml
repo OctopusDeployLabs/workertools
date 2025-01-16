@@ -141,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
-      NOMAD_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.VERSION }}
+      NOMAD_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.NOMAD_MAJOR_MINOR_VERSION }}
     steps:
       - name: Download enterprise digests
         uses: actions/download-artifact@v4
@@ -244,7 +244,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
-      NOMAD_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.VERSION }}
+      NOMAD_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.NOMAD_MAJOR_MINOR_VERSION }}
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
