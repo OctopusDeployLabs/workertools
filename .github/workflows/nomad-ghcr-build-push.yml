@@ -4,14 +4,14 @@ permissions:
   packages: write
 
 on:
-  push:
-    branches: 
-    - main
-    paths:
-    - nomad/**
-    - .github/workflows/nomad-ghcr-build-push.yml
-  schedule:
-    - cron: '0 10 * * *'
+  # push:
+  #   branches: 
+  #   - main
+  #   paths:
+  #   - nomad/**
+  #   - .github/workflows/nomad-ghcr-build-push.yml
+  # schedule:
+  #   - cron: '0 10 * * *'
   workflow_dispatch:
 
 env:
@@ -32,7 +32,8 @@ jobs:
       run: |
         Write-Output "Getting Nomad CLI version"
         $nomadCliInfo = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/hashicorp/nomad/tags?page=1"
-        $otherImages = $nomadCliInfo.results | Where-Object { $_.name -ine "latest" }
+        # We have to sort the images and remove tags like "1.8-ent" to get the latest semver version.
+        $otherImages = $nomadCliInfo.results | Where-Object { $_.name -ine "latest" -and $_.name -notlike "*-ent*" } | Sort-Object -Property @{Expression={[System.Version]$_.name}} -Descending | Select-Object -First 5
         $latestTag = $nomadCliInfo.results | Where-Object { $_.name -ieq "latest" }
         
         if($null -eq $latestTag)  {

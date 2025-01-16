@@ -1,14 +1,14 @@
 name: Build nomad-workertools image
 
 on:
-  push:
-    branches: 
-    - main
-    paths:
-    - nomad/**
-    - .github/workflows/nomad-docker-build-push.yml
-  schedule:
-    - cron: '0 10 * * *'
+  # push:
+  #   branches: 
+  #   - main
+  #   paths:
+  #   - nomad/**
+  #   - .github/workflows/nomad-docker-build-push.yml
+  # schedule:
+  #   - cron: '0 10 * * *'
   workflow_dispatch:
 
 env:
