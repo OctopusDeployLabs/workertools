@@ -27,6 +27,7 @@ The following images are built from this repository:
 - [HashiCorp Vault workertools](#vault-workertools) (`octopuslabs/vault-workertools`)
 - [ArgoCD workertools](#argocd-workertools) (`octopuslabs/argocd-workertools`)
 - [GitHub CLI workertools](#github-workertools) (`octopuslabs/github-workertools`)
+- [HashiCorp Nomad workertools](#nomad-workertools) (`octopuslabs/nomad-workertools`)
 
 ### Base workertools
 
@@ -226,6 +227,23 @@ A new image is built each time a new version of the GitHub CLI is detected. The 
 - `octopuslabs/github-workertools:VERSION`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/github-workertools/tags).
+
+### Nomad workertools
+
+This image contains all the necessary tooling to run [HashiCorp Nomad](https://www.nomadproject.io/) commands with Octopus Deploy:
+
+- Nomad CLI
+
+A new image is built each time a new version of HashiCorp Nomad is detected. The version numbers will be based on the version of Nomad's CLI.
+
+> Note: No windows/amd64 platform support is provided for this image.
+
+#### Tags
+
+- `octopuslabs/nomad-workertools:latest`
+- `octopuslabs/nomad-workertools:VERSION`
+
+You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/nomad-workertools/tags).
 
 ## Support
 
