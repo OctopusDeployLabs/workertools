@@ -58,6 +58,7 @@ jobs:
             $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
 
             if ($null -ne $matchingTag -or ($null -ne $workerToolsTags.errors -and $workerToolsTags.errors[0].code -ne "NAME_UNKNOWN"))
+            {
                 Write-Output "Docker container already has the latest version of nomad"
                 echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
             }
