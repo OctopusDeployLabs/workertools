@@ -1,14 +1,14 @@
 name: Build nomad-workertools image
 
 on:
-  # push:
-  #   branches: 
-  #   - main
-  #   paths:
-  #   - nomad/**
-  #   - .github/workflows/nomad-docker-build-push.yml
-  # schedule:
-  #   - cron: '0 10 * * *'
+  push:
+    branches: 
+    - main
+    paths:
+    - nomad/**
+    - .github/workflows/nomad-docker-build-push.yml
+  schedule:
+    - cron: '0 10 * * *'
   workflow_dispatch:
 
 env:
@@ -41,7 +41,7 @@ jobs:
         $versionParsed = [System.Version]::TryParse($latestVersion, [ref]$version)
         if (-not $versionParsed) {
             Write-Output "Unable to parse '$latestVersion' as a valid version. Won't continue"
-            #echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
+            echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
         }
         else {
             $versionToCompare = "$($version.Major).$($version.Minor).$($version.Build)"
@@ -54,13 +54,9 @@ jobs:
 
             if ($null -ne $matchingTag) {
                 Write-Output "Docker container already has the latest version of nomad"
-                #echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
+                echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
             }
             else {
-                if ($workerToolsTags.count -eq 0) {
-                    Write-Output "Docker container not found. This is probably the first run."
-                }
-
                 Write-Output "We need to create the nomad container for version $versionToCompare."
                 Write-Output "We have everything we need, continuing."
                 echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
