@@ -1,4 +1,4 @@
-name: Build GHCR gcp-workertools image
+name: Build GHCR nomad-workertools image
 
 permissions:
   packages: write
