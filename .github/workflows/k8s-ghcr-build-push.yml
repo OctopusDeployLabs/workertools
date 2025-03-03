@@ -67,6 +67,7 @@ jobs:
             throw "No GCLOUD CLI version with digest $latestDigest found"
         }
         else {
+            Write-Output "GCLOUD CLI version: $GCLOUD_CLI_VERSION"
             echo "GCLOUD_CLI_VERSION=$GCLOUD_CLI_VERSION" >> $env:GITHUB_OUTPUT
         }
 
