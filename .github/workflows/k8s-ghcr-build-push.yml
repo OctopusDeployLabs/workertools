@@ -133,6 +133,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       KUBECTL_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
+      GCLOUD_CLI_VERSION: ${{ needs.get-version-number.outputs.GCLOUD_CLI_VERSION }}
     steps:
 
     - name: Prepare
@@ -169,6 +170,7 @@ jobs:
         build-args: |
           BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE }}
           KUBECTL_MAJOR_MINOR_VERSION=${{ env.KUBECTL_MAJOR_MINOR_VERSION }}
+          GOOGLE_CLOUD_CLI_VERSION=${{ env.GCLOUD_CLI_VERSION }}
         outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
     - name: Export digest
@@ -186,7 +188,7 @@ jobs:
         retention-days: 1
   build-win-2022:
     needs: [get-version-number]
-    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }} 
     runs-on: windows-2022
     env:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
