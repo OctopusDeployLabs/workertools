@@ -3,6 +3,7 @@ FROM --platform=linux/arm64 ${BASE_IMAGE}:latest
 
 ARG DEBIAN_FRONTEND noninteractive
 ARG KUBECTL_MAJOR_MINOR_VERSION=1.29
+ARG GOOGLE_CLOUD_CLI_VERSION=462.0.0-0
 
 # Get kubectl
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
@@ -63,6 +64,13 @@ RUN apt-get update && apt-get install -y skopeo
 # Get Azure CLI
 # https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+# Install Google Cloud CLI
+# https://cloud.google.com/sdk/docs/downloads-apt-get
+RUN apt-get install -y ca-certificates gnupg && \
+    curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    apt-get update && apt-get install -y google-cloud-sdk=${GOOGLE_CLOUD_CLI_VERSION}
 
 # JQ
 RUN apt-get install -y jq
