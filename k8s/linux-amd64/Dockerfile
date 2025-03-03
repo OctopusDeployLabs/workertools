@@ -3,7 +3,6 @@ FROM --platform=linux/amd64 ${BASE_IMAGE}:latest
 
 ARG DEBIAN_FRONTEND noninteractive
 ARG KUBECTL_MAJOR_MINOR_VERSION=1.29
-ARG GOOGLE_CLOUD_CLI_VERSION=462.0.0-0
 
 # Get kubectl
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
@@ -46,10 +45,9 @@ RUN curl --silent -L "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" 
 # See https://github.com/OctopusDeploy/Issues/issues/7621 for more info
 RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    #apt-get update && apt-get install -y google-cloud-sdk=${GOOGLE_CLOUD_CLI_VERSION} \
-    apt-get update && apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+    apt-get update && apt-get install -y google-cloud-cli \
+    apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
 
-RUN apt-get install -y google-cloud-sdk=${GOOGLE_CLOUD_CLI_VERSION}
 
 # Get the Istio CLI
 # https://istio.io/docs/ops/diagnostic-tools/istioctl/
