@@ -46,7 +46,10 @@ RUN curl --silent -L "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" 
 # See https://github.com/OctopusDeploy/Issues/issues/7621 for more info
 RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    #apt-get update && apt-get install -y google-cloud-sdk=${GOOGLE_CLOUD_CLI_VERSION} \
     apt-get update && apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+
+RUN apt-get install -y google-cloud-sdk=${GOOGLE_CLOUD_CLI_VERSION}
 
 # Get the Istio CLI
 # https://istio.io/docs/ops/diagnostic-tools/istioctl/
@@ -68,12 +71,7 @@ RUN apt-get update && apt-get install -y skopeo
 # https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
-# Install Google Cloud CLI
-# https://cloud.google.com/sdk/docs/downloads-apt-get
-RUN apt-get install -y ca-certificates gnupg && \
-    curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    apt-get update && apt-get install -y google-cloud-sdk=${GOOGLE_CLOUD_CLI_VERSION}
+
 
 # AZ Powershell Modules
 RUN pwsh -c 'Install-Module -Name Az -Repository PSGallery -Scope AllUsers -AllowClobber -Force'
