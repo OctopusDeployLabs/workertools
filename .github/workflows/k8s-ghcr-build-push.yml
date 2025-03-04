@@ -67,6 +67,7 @@ jobs:
             throw "No GCLOUD CLI version with digest $latestDigest found"
         }
         else {
+            Write-Output "GCLOUD CLI version: $GCLOUD_CLI_VERSION"
             echo "GCLOUD_CLI_VERSION=$GCLOUD_CLI_VERSION" >> $env:GITHUB_OUTPUT
         }
 
@@ -186,7 +187,7 @@ jobs:
         retention-days: 1
   build-win-2022:
     needs: [get-version-number]
-    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }} 
     runs-on: windows-2022
     env:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
