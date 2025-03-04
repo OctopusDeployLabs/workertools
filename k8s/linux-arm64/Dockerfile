@@ -3,7 +3,6 @@ FROM --platform=linux/arm64 ${BASE_IMAGE}:latest
 
 ARG DEBIAN_FRONTEND noninteractive
 ARG KUBECTL_MAJOR_MINOR_VERSION=1.29
-ARG GOOGLE_CLOUD_CLI_VERSION=462.0.0-0
 
 # Get kubectl
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
