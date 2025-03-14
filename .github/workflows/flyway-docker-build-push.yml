@@ -27,7 +27,7 @@ jobs:
     - id: check-version
       name: Compare latest version with container
       run: |
-        $manifestDataRaw = Invoke-WebRequest "https://download.red-gate.com/maven/release/org/flywaydb/enterprise/flyway-commandline/maven-metadata.xml"
+        $manifestDataRaw = Invoke-WebRequest "https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/maven-metadata.xml"
         $manifestData = [Xml]$manifestDataRaw
 
         $versionToCompare = $manifestData.metadata.versioning.release
