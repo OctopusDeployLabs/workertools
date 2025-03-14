@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install unzip \
 WORKDIR /flyway
 
 # Install flyway
-RUN curl -L https://download.red-gate.com/maven/release/org/flywaydb/enterprise/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}.tar.gz -o flyway-commandline-${FLYWAY_VERSION}.tar.gz \
+RUN curl -L https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}.tar.gz -o flyway-commandline-${FLYWAY_VERSION}.tar.gz \
   && tar -xzf flyway-commandline-${FLYWAY_VERSION}.tar.gz --strip-components=1 \
   && rm flyway-commandline-${FLYWAY_VERSION}.tar.gz \
   # Make the /flyway/flyway command an executable
