@@ -7,6 +7,17 @@ RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/s
     echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list && \
     apt update && apt install -y terraform
 
+# Get Node.js
+# https://nodejs.org/en/download/package-manager/all
+RUN curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh && \
+    bash nodesource_setup.sh && \
+    apt-get install -y nodejs && \
+    rm nodesource_setup.sh
+
+# Get CDK
+# https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html
+RUN npm install -g aws-cdk
+
 # Get AWS CLI
 # https://docs.aws.amazon.com/cli/latest/userguide/install-linux.html#install-linux-awscli
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
