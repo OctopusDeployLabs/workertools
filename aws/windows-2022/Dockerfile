@@ -6,6 +6,12 @@ SHELL ["powershell", "-Command"]
 # Install Terraform
 RUN choco install terraform -y --no-progress
 
+# Install Node.js
+RUN choco install nodejs.install
+
+# Install CDK
+RUN npm install -g aws-cdk
+
 # Install AWS CLI
 RUN choco install awscli -y --no-progress
 
