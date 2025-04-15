@@ -34,22 +34,22 @@ jobs:
         $googleCloudSdkInfo = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/google/cloud-sdk/tags?page=1"
         $otherImages = $googleCloudSdkInfo.results | Where-Object { $_.name -ine "latest" }
         $latestTag = $googleCloudSdkInfo.results | Where-Object { $_.name -ieq "latest" }
-        
-        if($null -eq $latestTag)  {
+
+        if ($null -eq $latestTag) {
             throw "Couldnt find latest tag for Google Cloud SDK version from DockerHub"
         }
-        
-        $latestTagImage = $latestTag.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active"} | Select-Object -First 1
-        if($null -eq $latestTagImage)  {
+
+        $latestTagImage = $latestTag.images | Where-Object { $_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active" } | Select-Object -First 1
+        if ($null -eq $latestTagImage) {
             throw "Couldnt find latest tag image for Google Cloud SDK version for linux/amd64"
         }
         $latestDigest = $latestTagImage.digest
         Write-Output "Found latest digest: $latestDigest"
 
         $versionToCompare = ""
-        foreach($result in $otherImages) {
-            $matchingImageDigest = $result.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
-            if($null -eq $matchingImageDigest) {
+        foreach ($result in $otherImages) {
+            $matchingImageDigest = $result.images | Where-Object { $_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
+            if ($null -eq $matchingImageDigest) {
                 continue;
             }
             else {
@@ -65,19 +65,18 @@ jobs:
             throw "No version with digest $latestDigest found"
         }
 
-            $token = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
-            $workerToolsTags = Invoke-RestMethod -Uri "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers @{Authorization="Bearer $token"} -SkipHttpErrorCheck
-            $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
+        $token = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
+        $response = @(Invoke-RestMethod -Uri "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -FollowRelLink -Headers @{Authorization="Bearer $token"} -SkipHttpErrorCheck)
+        $workerToolsTags = @($response.tags | ForEach-Object {$_})
+        $matchingTag = $workerToolsTags | Where-Object { $_ -eq $versionToCompare }
 
-            echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
+        echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
 
-            if ($null -ne $matchingTag -or ($null -ne $workerToolsTags.errors -and $workerToolsTags.errors[0].code -ne "NAME_UNKNOWN"))
-        {
+        if ($null -ne $matchingTag -or ($null -ne $response.errors -and $response.errors[0].code -ne "NAME_UNKNOWN"))
             Write-Host "Docker container already has latest version"
             echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
         }
-        else
-        {
+        else {
             Write-Host "We need to upgrade the container to $versionToCompare"            
 
             Write-Host "Getting OS versions for windows 2022"
@@ -85,8 +84,8 @@ jobs:
             $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
             Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
 
-            if([string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
-              throw "Could not establish OS versions for windows 2022 needed for docker manifest"
+            if ([string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
+                throw "Could not establish OS versions for windows 2022 needed for docker manifest"
             }
 
             echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT

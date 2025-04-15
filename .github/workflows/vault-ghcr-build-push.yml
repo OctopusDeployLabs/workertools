@@ -44,12 +44,13 @@ jobs:
             Write-Host "Parsed version as $versionToCompare"
 
             $token = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
-            $workerToolsTags = Invoke-RestMethod -Uri "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -Headers @{Authorization="Bearer $token"} -SkipHttpErrorCheck
-            $matchingTag = $workerToolsTags.tags | Where-Object { $_ -eq $versionToCompare }
+            $response = @(Invoke-RestMethod -Uri "https://ghcr.io/v2/${{ env.REGISTRY_IMAGE }}/tags/list" -FollowRelLink -Headers @{Authorization="Bearer $token"} -SkipHttpErrorCheck)
+            $workerToolsTags = @($response.tags | ForEach-Object {$_})
+            $matchingTag = $workerToolsTags | Where-Object { $_ -eq $versionToCompare }
 
             echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
 
-            if ($null -ne $matchingTag -or ($null -ne $workerToolsTags.errors -and $workerToolsTags.errors[0].code -ne "NAME_UNKNOWN"))
+            if ($null -ne $matchingTag -or ($null -ne $response.errors -and $response.errors[0].code -ne "NAME_UNKNOWN"))
             {
                 Write-Host "Docker container already has latest version"
                 echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
