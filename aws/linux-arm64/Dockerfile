@@ -36,9 +36,5 @@ RUN curl --silent --location "https://github.com/weaveworks/eksctl/releases/late
     mv /tmp/eksctl /usr/local/bin
 
 # AWS Powershell tools
-# Can't be installed on ARM currently due to this issue: https://github.com/docker/buildx/issues/1422
-# tl;dr - qemu emulation of arm64 when run on ubuntu 22.04 doesnt allow for the install.
-# An error of: "5.066 Illegal instruction (core dumped)" is returned
-
 RUN pwsh -c 'Install-Module -Force -Name AWS.Tools.Installer -AllowClobber -Scope AllUsers'
 RUN pwsh -c 'Install-Module -Force -Name AWS.Tools.Common -AllowClobber -Scope AllUsers'
