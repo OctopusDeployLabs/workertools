@@ -1,5 +1,5 @@
-ARG BASE_IMAGE
-FROM --platform=linux/arm64 ${BASE_IMAGE}:latest
+ARG BASE_IMAGE=octopuslabs/workertools
+FROM ${BASE_IMAGE}:latest
 
 ARG DEBIAN_FRONTEND noninteractive
 ARG GOOGLE_CLOUD_CLI_VERSION=462.0.0-0

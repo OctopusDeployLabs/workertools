@@ -1,5 +1,5 @@
-ARG BASE_IMAGE
-FROM --platform=linux/amd64 ${BASE_IMAGE}:latest
+ARG BASE_IMAGE=octopuslabs/workertools
+FROM ${BASE_IMAGE}:latest
 
 # Get Terraform
 # https://developer.hashicorp.com/terraform/downloads

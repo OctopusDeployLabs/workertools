@@ -1,5 +1,5 @@
-ARG BASE_IMAGE
-FROM --platform=linux/arm64 ${BASE_IMAGE}:latest
+ARG BASE_IMAGE=octopuslabs/workertools
+FROM ${BASE_IMAGE}:latest
 
 ARG DEBIAN_FRONTEND noninteractive
 ARG VAULT_VERSION=1.15.5

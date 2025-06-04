@@ -1,6 +1,6 @@
 # escape=`
-ARG BASE_IMAGE
-FROM --platform=windows/amd64 ${BASE_IMAGE}:latest
+ARG BASE_IMAGE=octopuslabs/workertools
+FROM ${BASE_IMAGE}:latest
 SHELL ["powershell", "-Command"]
 
 # Install Terraform

@@ -1,5 +1,5 @@
-ARG BASE_IMAGE
-FROM --platform=linux/arm64 ${BASE_IMAGE}:latest
+ARG BASE_IMAGE=octopuslabs/workertools
+FROM ${BASE_IMAGE}:latest
 
 # Get Terraform
 # https://developer.hashicorp.com/terraform/downloads
@@ -40,5 +40,5 @@ RUN curl --silent --location "https://github.com/weaveworks/eksctl/releases/late
 # tl;dr - qemu emulation of arm64 when run on ubuntu 22.04 doesnt allow for the install.
 # An error of: "5.066 Illegal instruction (core dumped)" is returned
 
-#RUN pwsh -c 'Install-Module -Force -Name AWS.Tools.Installer -AllowClobber -Scope AllUsers'
-#RUN pwsh -c 'Install-Module -Force -Name AWS.Tools.Common -AllowClobber -Scope AllUsers'
+RUN pwsh -c 'Install-Module -Force -Name AWS.Tools.Installer -AllowClobber -Scope AllUsers'
+RUN pwsh -c 'Install-Module -Force -Name AWS.Tools.Common -AllowClobber -Scope AllUsers'

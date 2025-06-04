@@ -1,5 +1,5 @@
-ARG BASE_IMAGE
-FROM --platform=linux/amd64 ${BASE_IMAGE}:latest
+ARG BASE_IMAGE=octopuslabs/workertools
+FROM ${BASE_IMAGE}:latest
 
 ARG DEBIAN_FRONTEND noninteractive
 ARG KUBECTL_MAJOR_MINOR_VERSION=1.29
