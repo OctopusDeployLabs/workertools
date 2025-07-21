@@ -27,9 +27,16 @@ jobs:
     - uses: actions/checkout@v4
     - id: check-version
       name: Compare latest version with container
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        Write-Output "Getting Nomad CLI version" 
-        $nomadLatestReleases = @(Invoke-RestMethod "https://api.github.com/repos/hashicorp/nomad/releases/latest")
+        Write-Output "Getting Nomad CLI version"
+        $headers = @{
+              Authorization = "Bearer $env:GITHUB_TOKEN"
+              "Accept"      = "application/vnd.github+json"
+              "User-Agent"  = "GitHubAction"
+          } 
+        $nomadLatestReleases = @(Invoke-RestMethod "https://api.github.com/repos/hashicorp/nomad/releases/latest" -Headers $headers)
         if ($null -eq $nomadLatestReleases -or $nomadLatestReleases.Count -eq 0) {
             throw "Couldnt find latest release for the Nomad CLI from GitHub"
         }
