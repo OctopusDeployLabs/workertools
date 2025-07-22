@@ -28,11 +28,18 @@ jobs:
     - uses: actions/checkout@v4
     - id: check-version
       name: Compare latest version with container
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         $Repository = "liquibase/liquibase"
+        $headers = @{
+              Authorization = "Bearer $env:GITHUB_TOKEN"
+              "Accept"      = "application/vnd.github+json"
+              "User-Agent"  = "GitHubAction"
+          } 
         $releasesUrl = "https://api.github.com/repos/$Repository/releases"
 
-        $tags = (Invoke-WebRequest $releasesUrl -UseBasicParsing | ConvertFrom-Json)
+        $tags = (Invoke-WebRequest $releasesUrl -UseBasicParsing -Headers $headers | ConvertFrom-Json)
         $tagsWithAssets = @($tags | Where-Object {$_.assets.Count -gt 0 })
 
         if($null -eq $tagsWithAssets) {
