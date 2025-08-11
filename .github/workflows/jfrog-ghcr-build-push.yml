@@ -41,13 +41,11 @@ jobs:
         $releasesUrl = "https://api.github.com/repos/$Repository/releases"
 
         $tags = (Invoke-WebRequest $releasesUrl -UseBasicParsing -Headers $headers | ConvertFrom-Json)
-        $tagsWithAssets = @($tags | Where-Object {$_.assets.Count -gt 0 })
-
-        if($null -eq $tagsWithAssets) {
+        if($null -eq $tags) {
             throw "No valid tags found for jfrog tool!"
         }
 
-        $latestJfrogTag = ($tagsWithAssets | Select-Object -First 1)
+        $latestJfrogTag = ($tags | Select-Object -First 1)
         $latestJfrogVersion = $latestJfrogTag.tag_name -Replace "v",""
 
         [System.Version]$version = $null
