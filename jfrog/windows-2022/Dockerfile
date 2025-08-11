@@ -15,5 +15,4 @@ RUN New-Item -ItemType Directory -Path $env:JFROG_HOME | Out-Null ; `
     $jFrogPath = ';C:\jfrog-cli'; `    
     $new = $old + $jFrogPath; `
     Write-Host $new; `
-    Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name path -Value $new; `
-    refreshenv
+    Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name path -Value $new;
