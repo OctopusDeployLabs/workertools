@@ -28,6 +28,7 @@ The following images are built from this repository:
 - [ArgoCD workertools](#argocd-workertools) (`octopuslabs/argocd-workertools`)
 - [GitHub CLI workertools](#github-workertools) (`octopuslabs/github-workertools`)
 - [HashiCorp Nomad workertools](#nomad-workertools) (`octopuslabs/nomad-workertools`)
+- [Jfrog workertools](#jfrog-workertools) (`octopuslabs/jfrog-workertools`)
 
 ### Base workertools
 
@@ -244,6 +245,22 @@ A new image is built each time a new version of HashiCorp Nomad is detected. The
 - `octopuslabs/nomad-workertools:VERSION`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/nomad-workertools/tags).
+
+### JFrog workertools
+
+This image contains all the necessary tooling to deploy to [JFrog](https://jfrog.io/) with Octopus Deploy:
+
+- JFrog CLI (v2): `jf`
+
+A new image is built each time a new version of the JFrog CLI is detected. The version numbers will be based on the version of the JFrog CLI.
+
+#### Tags
+
+- `octopuslabs/jfrog-workertools:latest`
+- `octopuslabs/jfrog-workertools:VERSION`
+- `octopuslabs/jfrog-workertools:VERSION-win.2022`
+
+You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/jfrog-workertools/tags).
 
 ## Support
 
