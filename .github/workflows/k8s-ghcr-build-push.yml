@@ -32,25 +32,20 @@ jobs:
     - id: check-version
       name: Compare latest version with container
       run: |
+        # This code assumes that the gcloud cli latest tag is always of type: linux/amd64  
         Write-Output "Getting GCLOUD CLI version (needed for gke-auth-plugin)"
         $googleCloudSdkInfo = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/google/cloud-sdk/tags?page=1"
         $otherImages = $googleCloudSdkInfo.results | Where-Object { $_.name -ine "latest" }
-        $latestTag = $googleCloudSdkInfo.results | Where-Object { $_.name -ieq "latest" }
-        
+        $latestTag = $googleCloudSdkInfo.results | Where-Object { $_.name -ieq "latest" -and $_.tag_status -ieq "active" -and $_.content_type -ieq "image" } | Select-Object -First 1
         if($null -eq $latestTag)  {
-            throw "Couldnt find latest tag for Google Cloud SDK version from DockerHub"
+            throw "Couldnt find latest tag for Google Cloud SDK version from Docker Hub"
         }
-        
-        $latestTagImage = $latestTag.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active"} | Select-Object -First 1
-        if($null -eq $latestTagImage)  {
-            throw "Couldnt find latest tag image for Google Cloud SDK version for linux/amd64"
-        }
-        $latestDigest = $latestTagImage.digest
+        $latestDigest = $latestTag.digest
         Write-Output "Found latest digest: $latestDigest"
 
         $GCLOUD_CLI_VERSION = ""
         foreach($result in $otherImages) {
-            $matchingImageDigest = $result.images | Where-Object {$_.os -ieq "linux" -and $_.architecture -ieq "amd64" -and $_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
+            $matchingImageDigest = $result | Where-Object {$_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
             if($null -eq $matchingImageDigest) {
                 continue;
             }
