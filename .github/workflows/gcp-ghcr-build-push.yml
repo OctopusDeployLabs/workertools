@@ -43,7 +43,7 @@ jobs:
 
         $versionToCompare = ""
         foreach($image in $otherImages) {
-            $matchingImageDigest = $image | Where-Object {$_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
+            $matchingImageDigest = $image | Where-Object {$_.tag_status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
             if($null -eq $matchingImageDigest) {
                 continue;
             }

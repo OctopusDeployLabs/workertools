@@ -45,7 +45,7 @@ jobs:
 
         $GCLOUD_CLI_VERSION = ""
         foreach($result in $otherImages) {
-            $matchingImageDigest = $result | Where-Object {$_.status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
+            $matchingImageDigest = $result | Where-Object {$_.tag_status -ieq "active" -and $_.digest -ieq $latestDigest } | Select-Object -First 1
             if($null -eq $matchingImageDigest) {
                 continue;
             }
