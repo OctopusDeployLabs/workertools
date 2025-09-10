@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS base
 
 ARG PS_VERSION
+ARG DEBIAN_FRONTEND noninteractive
 
 # Get pre-req tooling
 RUN apt-get update && \
@@ -28,6 +29,9 @@ RUN apt-get install -y python3-pip groff
 
 # Install the Octopus CLI
 RUN curl -L https://github.com/OctopusDeploy/cli/raw/main/scripts/install.sh | bash
+
+# Install git
+RUN apt-get update && apt-get install -y git 
 
 # We know this won't reduce the image size at all. It's just to make the filesystem a little tidier.
 RUN rm -rf /tmp/*

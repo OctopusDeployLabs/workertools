@@ -11,9 +11,6 @@ RUN mkdir -m 755 -p /etc/apt/keyrings && \
     echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${KUBECTL_MAJOR_MINOR_VERSION}/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list && \
     apt-get update && apt-get install -y kubectl
 
-# Install git
-RUN apt-get update && apt-get install -y git 
-
 # Install Argo CD
 RUN curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 && \
     install -m 555 argocd-linux-amd64 /usr/local/bin/argocd && \
