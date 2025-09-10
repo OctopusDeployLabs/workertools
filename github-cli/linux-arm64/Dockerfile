@@ -32,3 +32,6 @@ RUN apt-get install -y ca-certificates gnupg && \
     curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     apt-get update && apt-get install -y google-cloud-sdk
+
+# Install Docker - used for running the attestation.  Needs to pull image to verify
+RUN apt-get update && apt-get install -y docker.io
