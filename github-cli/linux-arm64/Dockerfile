@@ -1,7 +1,14 @@
 ARG BASE_IMAGE=octopuslabs/workertools
+
+# Stage 1: Build stage to get the latest docker executable for ARM64
+FROM docker.io/docker:cli AS docker-build
+# Stage 2: The final image
 FROM ${BASE_IMAGE}:latest
 
 ARG DEBIAN_FRONTEND noninteractive
+
+# Copy the Docker executable from the build stage
+COPY --from=docker-build /usr/local/bin/docker /usr/local/bin/docker
 
 # Install GitHub CLI
 RUN mkdir -p -m 755 /etc/apt/keyrings \
@@ -26,12 +33,13 @@ RUN pwsh -c 'Install-Module -Force -Name AWS.Tools.Common -AllowClobber -Scope A
 # https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
+# Get AZ Powershell core modules
+# https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell?view=azps-11.2.0
+RUN pwsh -c 'Install-Module -Name Az -Repository PSGallery -Scope AllUsers -AllowClobber -Force'
+
 # Install Google Cloud CLI
 # https://cloud.google.com/sdk/docs/downloads-apt-get
 RUN apt-get install -y ca-certificates gnupg && \
     curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     apt-get update && apt-get install -y google-cloud-sdk
-
-# Install Docker - used for running the attestation.  Needs to pull image to verify
-RUN apt-get update && apt-get install -y docker.io
