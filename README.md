@@ -29,6 +29,7 @@ The following images are built from this repository:
 - [GitHub CLI workertools](#github-workertools) (`octopuslabs/github-workertools`)
 - [HashiCorp Nomad workertools](#nomad-workertools) (`octopuslabs/nomad-workertools`)
 - [Jfrog workertools](#jfrog-workertools) (`octopuslabs/jfrog-workertools`)
+- [Trivy workertools](#trivy-workertools) (`octopuslabs/trivy-workertools`)
 
 ### Base workertools
 
@@ -261,6 +262,23 @@ A new image is built each time a new version of the JFrog CLI is detected. The v
 - `octopuslabs/jfrog-workertools:VERSION-win.2022`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/jfrog-workertools/tags).
+
+### Trivy workertools
+
+This image contains all the necessary tooling to run [Trivy](https://trivy.dev/latest/) commands with Octopus Deploy:
+
+- Trivy CLI
+
+A new image is built each time a new version of Trivy is detected. The version numbers will be based on the version of Trivy CLI.
+
+> Note: No windows/amd64 platform support is provided for this image.
+
+#### Tags
+
+- `octopuslabs/trivy-workertools:latest`
+- `octopuslabs/trivy-workertools:VERSION`
+
+You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/nomad-workertools/tags).
 
 ## Support
 
