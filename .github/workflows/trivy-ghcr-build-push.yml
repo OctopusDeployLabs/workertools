@@ -74,6 +74,8 @@ jobs:
           - linux/amd64
           - linux/arm64
     runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ needs.get-version-number.outputs.VERSION }}
     steps:
 
     - name: Prepare
