@@ -2,12 +2,12 @@ ARG BASE_IMAGE=octopuslabs/workertools
 FROM ${BASE_IMAGE}:latest
 
 ARG DEBIAN_FRONTEND noninteractive
-ARG TRIVY_VERSION=0.64.0
+ARG TRIVY_VERSION=0.66.0
 
-RUN curl -L https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz -o trivy-${TRIVY_VERSION}.tar.gz \
-  && tar -xzf trivy-${TRIVY_VERSION}.tar.gz --strip-components=1 \
-  && rm trivy-${TRIVY_VERSION}.tar.gz \
-  # Make the /trivy/trivy command an executable
-  && chmod +x /trivy/trivy \
-  # Make it so any user can call /trivy/trivy
-  && ln -s /trivy/trivy /usr/local/bin/trivy
+RUN apt-get update && \
+    apt-get install -y wget apt-transport-https gnupg lsb-release && \
+    wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | apt-key add - && \
+    echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main > /etc/apt/sources.list.d/trivy.list && \
+    apt-get update && \
+    apt-get install -y trivy=${TRIVY_VERSION} && \
+    rm -rf /var/lib/apt/lists/*
