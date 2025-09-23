@@ -5,13 +5,19 @@ permissions:
 
 on:
   push:
-    branches: 
+    branches:
     - main
     paths:
     - k8s/**
   schedule:
     - cron: '0 7 * * *'
   workflow_dispatch:
+    inputs:
+      force_run:
+        description: 'Force the build to run'
+        required: false
+        default: false
+        type: boolean
 
 env:
    REGISTRY_IMAGE_BASE: ghcr.io/octopusdeploylabs/workertools
@@ -27,12 +33,13 @@ jobs:
       GCLOUD_CLI_VERSION: ${{ steps.check-version.outputs.GCLOUD_CLI_VERSION }}
       KUBECTL_MAJOR_MINOR_VERSION: ${{ steps.check-version.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
       WIN2022_VERSION: ${{ steps.check-version.outputs.WIN2022_VERSION }}
-    steps:    
+    steps:
     - uses: actions/checkout@v4
     - id: check-version
       name: Compare latest version with container
       run: |
-        # This code assumes that the gcloud cli latest tag is always of type: linux/amd64  
+        $forceRun = "${{ github.event.inputs.force_run }}" -eq "true"
+        # This code assumes that the gcloud cli latest tag is always of type: linux/amd64
         Write-Output "Getting GCLOUD CLI version (needed for gke-auth-plugin)"
         $googleCloudSdkInfo = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/google/cloud-sdk/tags?page=1"
         $otherImages = $googleCloudSdkInfo.results | Where-Object { $_.name -ine "latest" }
@@ -91,14 +98,13 @@ jobs:
             echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
             echo "KUBECTL_MAJOR_MINOR_VERSION=$majorMinorVersion" >> $env:GITHUB_OUTPUT
 
-            if ($null -ne $matchingTag -or ($null -ne $response.errors -and $response.errors[0].code -ne "NAME_UNKNOWN"))
-            {
-                Write-Host "Docker container already has latest version"
-                echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
-            }
-            else
-            {
-                Write-Host "We need to upgrade the container to $versionToCompare"            
+            $isUpgradeNeeded = $null -eq $matchingTag -and ($null -eq $response.errors -or $response.errors[0].code -ne "NAME_UNKNOWN")
+
+            if ($forceRun -or $isUpgradeNeeded) {
+                if ($forceRun) {
+                    Write-Host "Manual trigger is set. Forcing a build."
+                }
+                Write-Host "We need to upgrade the container to $versionToCompare"
 
                 Write-Host "Getting OS versions for windows 2022"
                 $win2022_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2022" | ConvertFrom-Json)
@@ -110,9 +116,13 @@ jobs:
                 }
 
                 echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT
-                
+
                 Write-Host "We have everything we need, continuing."
                 echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
+            }
+            else {
+                Write-Host "Docker container already has latest version"
+                echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
             }
         }
       shell: pwsh
@@ -122,7 +132,7 @@ jobs:
     if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     strategy:
       matrix:
-        os: 
+        os:
           - ubuntu-latest
         platform:
           - linux/amd64
@@ -135,10 +145,10 @@ jobs:
     - name: Prepare
       run: |
           platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV 
-          echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV 
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV
 
-    - name: Checkout  
+    - name: Checkout
       uses: actions/checkout@v4
 
     - name: Set up QEMU
@@ -157,7 +167,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push by digest
-      id: build  
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: k8s/${{ env.PLATFORM_PAIR }}
@@ -173,7 +183,7 @@ jobs:
           mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
-                    
+
     - name: Upload digest
       uses: actions/upload-artifact@v4
       with:
@@ -183,14 +193,14 @@ jobs:
         retention-days: 1
   build-win-2022:
     needs: [get-version-number]
-    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }} 
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     runs-on: windows-2022
     env:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
       GCLOUD_CLI_VERSION: ${{ needs.get-version-number.outputs.GCLOUD_CLI_VERSION }}
     steps:
     - uses: actions/checkout@v4
-       
+
     - name: Login to GHCR
       uses: docker/login-action@v3
       with:
@@ -221,7 +231,6 @@ jobs:
         path: ${{ env.WIN_DIGEST_PATH }}/*
         if-no-files-found: error
         retention-days: 1
-
   merge:
     needs: [get-version-number, build-linux, build-win-2022]
     if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
@@ -257,7 +266,7 @@ jobs:
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)          
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
