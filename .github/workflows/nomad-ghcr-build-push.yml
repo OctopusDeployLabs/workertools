@@ -5,7 +5,7 @@ permissions:
 
 on:
   push:
-    branches: 
+    branches:
     - main
     paths:
     - nomad/**
@@ -13,6 +13,12 @@ on:
   schedule:
     - cron: '0 10 * * *'
   workflow_dispatch:
+    inputs:
+      force_run:
+        description: 'Force the build to run'
+        required: false
+        default: false
+        type: boolean
 
 env:
    REGISTRY_IMAGE_BASE: ghcr.io/octopusdeploylabs/workertools
@@ -26,19 +32,20 @@ jobs:
       CONTINUE: ${{ steps.check-version.outputs.CONTINUE }}
       VERSION: ${{ steps.check-version.outputs.VERSION }}
       NOMAD_MAJOR_MINOR_VERSION: ${{ steps.check-version.outputs.NOMAD_MAJOR_MINOR_VERSION }}
-    steps:    
+    steps:
     - uses: actions/checkout@v4
     - id: check-version
       name: Compare latest version with container
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        $forceRun = "${{ github.event.inputs.force_run }}" -eq "true"
         Write-Output "Getting Nomad CLI version"
         $headers = @{
               Authorization = "Bearer $env:GITHUB_TOKEN"
               "Accept"      = "application/vnd.github+json"
               "User-Agent"  = "GitHubAction"
-          } 
+          }
         $nomadLatestReleases = @(Invoke-RestMethod "https://api.github.com/repos/hashicorp/nomad/releases/latest" -Headers $headers)
         if ($null -eq $nomadLatestReleases -or $nomadLatestReleases.Count -eq 0) {
             throw "Couldnt find latest release for the Nomad CLI from GitHub"
@@ -65,17 +72,21 @@ jobs:
             $workerToolsTags = @($response.tags | ForEach-Object {$_})
             $matchingTag = $workerToolsTags | Where-Object { $_ -eq $versionToCompare }
 
-            if ($null -ne $matchingTag -or ($null -ne $response.errors -and $response.errors[0].code -ne "NAME_UNKNOWN"))
-            {
-                Write-Output "Docker container already has the latest version of nomad"
-                echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
-            }
-            else {
+            $isUpgradeNeeded = $null -eq $matchingTag -and ($null -eq $response.errors -or $response.errors[0].code -ne "NAME_UNKNOWN")
+
+            if ($forceRun -or $isUpgradeNeeded) {
+                if ($forceRun) {
+                    Write-Host "Manual trigger is set. Forcing a build."
+                }
                 Write-Output "We need to create the nomad container for version $versionToCompare."
                 Write-Output "We have everything we need, continuing."
                 echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
                 echo "NOMAD_MAJOR_MINOR_VERSION=$majorMinorVersion" >> $env:GITHUB_OUTPUT
                 echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
+            }
+            else {
+                Write-Output "Docker container already has the latest version of nomad"
+                echo "CONTINUE=No" >> $env:GITHUB_OUTPUT
             }
         }
       shell: pwsh
@@ -85,7 +96,7 @@ jobs:
     if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     strategy:
       matrix:
-        os: 
+        os:
           - ubuntu-latest
         platform:
           - linux/amd64
@@ -98,10 +109,10 @@ jobs:
     - name: Prepare
       run: |
           platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV 
-          echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV 
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV
 
-    - name: Checkout  
+    - name: Checkout
       uses: actions/checkout@v4
 
     - name: Set up QEMU
@@ -120,7 +131,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push by digest
-      id: build  
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: nomad/${{ env.PLATFORM_PAIR }}
@@ -137,7 +148,7 @@ jobs:
           mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
-                    
+
     - name: Upload enterprise digest
       uses: actions/upload-artifact@v4
       with:
@@ -181,7 +192,7 @@ jobs:
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)          
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
@@ -190,7 +201,7 @@ jobs:
     if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     strategy:
       matrix:
-        os: 
+        os:
           - ubuntu-latest
         platform:
           - linux/amd64
@@ -203,10 +214,10 @@ jobs:
     - name: Prepare
       run: |
           platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV 
-          echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV 
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV
 
-    - name: Checkout  
+    - name: Checkout
       uses: actions/checkout@v4
 
     - name: Set up QEMU
@@ -225,7 +236,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push by digest
-      id: build  
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: nomad/${{ env.PLATFORM_PAIR }}
@@ -242,7 +253,7 @@ jobs:
           mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
-                    
+
     - name: Upload digest
       uses: actions/upload-artifact@v4
       with:
@@ -285,7 +296,7 @@ jobs:
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)          
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}          
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
