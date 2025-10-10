@@ -98,7 +98,7 @@ jobs:
             echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
             echo "KUBECTL_MAJOR_MINOR_VERSION=$majorMinorVersion" >> $env:GITHUB_OUTPUT
 
-            $isUpgradeNeeded = $null -eq $matchingTag -and ($null -eq $response.errors -or $response.errors[0].code -ne "NAME_UNKNOWN")
+            $isUpgradeNeeded = $null -eq $matchingTag -and ($null -eq $response.errors -or $response.errors[0].code -ieq "NAME_UNKNOWN")
 
             if ($forceRun -or $isUpgradeNeeded) {
                 if ($forceRun) {
