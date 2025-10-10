@@ -50,7 +50,7 @@ jobs:
         }
 
         $latestBwsCliTags = ($tags | Where-Object { $_.tag_name -like "bws-v*" } | Select-Object -First 1)
-        $latestBwsVersion = $latestBwsCliTags.tag_name -Replace "v",""
+        $latestBwsVersion = $latestBwsCliTags.tag_name -Replace "bws-v",""
 
         [System.Version]$version = $null
         $versionParsed = [System.Version]::TryParse($latestBwsVersion, [ref]$version)
