@@ -26,10 +26,11 @@ The following images are built from this repository:
 - [Terraform workertools](#terraform-workertools) (`octopuslabs/terraform-workertools`)
 - [HashiCorp Vault workertools](#vault-workertools) (`octopuslabs/vault-workertools`)
 - [ArgoCD workertools](#argocd-workertools) (`octopuslabs/argocd-workertools`)
-- [GitHub CLI workertools](#github-workertools) (`octopuslabs/github-workertools`)
+- [GitHub CLI workertools](#github-cli-workertools) (`octopuslabs/github-workertools`)
 - [HashiCorp Nomad workertools](#nomad-workertools) (`octopuslabs/nomad-workertools`)
 - [Jfrog workertools](#jfrog-workertools) (`octopuslabs/jfrog-workertools`)
 - [Trivy workertools](#trivy-workertools) (`octopuslabs/trivy-workertools`)
+- [Bitwarden workertools](#bitwarden-workertools) (`octopuslabs/bitwarden-workertools`)
 
 ### Base workertools
 
@@ -41,7 +42,7 @@ This is the base image which includes:
 
 A new image is built each time a new version of PowerShell Core is detected. The version numbers are based on the version of PowerShell Core.
 
-#### Tags
+#### Base Tags
 
 - `octopuslabs/workertools:latest`
 - `octopuslabs/workertools:VERSION`
@@ -61,7 +62,7 @@ This image contains all the necessary tooling to deploy to [AWS](https://aws.ama
 
 A new image is built each time a new version of AWS CLI is detected. The version numbers will be based on the version of AWS CLI.
 
-#### Tags
+#### AWS Tags
 
 - `octopuslabs/aws-workertools:latest`
 - `octopuslabs/aws-workertools:VERSION`
@@ -79,7 +80,7 @@ This image contains all the necessary tooling to deploy to [Azure](https://azure
 
 A new image is built each time a new version of Azure CLI is detected. The version numbers will be based on the version of the Azure CLI.
 
-#### Tags
+#### Azure Tags
 
 - `octopuslabs/azure-workertools:latest`
 - `octopuslabs/azure-workertools:VERSION`
@@ -96,7 +97,7 @@ This image contains all the necessary tooling to use the execution container fea
 
 A new image is built each time a new version of flyway is detected. The version numbers will be based on the version of the Flyway tool.
 
-#### Tags
+#### Flyway Tags
 
 - `octopuslabs/flyway-workertools:latest`
 - `octopuslabs/flyway-workertools:VERSION`
@@ -113,7 +114,7 @@ This image contains all the necessary tooling to deploy to [GCP](https://cloud.g
 
 A new image is built each time a new version of the Google Cloud SDK is detected. The version numbers will be based on the version of the GCloud CLI.
 
-#### Tags
+#### GCP Tags
 
 - `octopuslabs/gcp-workertools:latest`
 - `octopuslabs/gcp-workertools:VERSION`
@@ -132,7 +133,7 @@ This image contains all the necessary tooling to deploy to [Kubernetes](https://
 
 A new image is built each time a new version of `kubectl` is detected. The version numbers will be based on the version of `kubectl`.
 
-#### Tags
+#### Kubernetes Tags
 
 - `octopuslabs/k8s-workertools:latest`
 - `octopuslabs/k8s-workertools:VERSION`
@@ -152,7 +153,7 @@ A new image is built each time a new version of Liqbuibase is detected. The vers
 
 > **Note:** No `windows/amd64` platform support is provided for this image.
 
-#### Tags
+#### Liquibase Tags
 
 - `octopuslabs/liquibase-workertools:latest`
 - `octopuslabs/liquibase-workertools:VERSION`
@@ -168,7 +169,7 @@ This image contains all the necessary tooling to run [Terraform](https://terrafo
 
 A new image is built each time a new version of Terraform is detected. The version numbers will be based on the version of Terraform.
 
-#### Tags
+#### Terraform Tags
 
 - `octopuslabs/terraform-workertools:latest`
 - `octopuslabs/terraform-workertools:VERSION`
@@ -186,7 +187,7 @@ A new image is built each time a new version of HashiCorp Vault is detected. The
 
 > Note: No windows/amd64 platform support is provided for this image.
 
-#### Tags
+#### Vault Tags
 
 - `octopuslabs/vault-workertools:latest`
 - `octopuslabs/vault-workertools:VERSION`
@@ -204,13 +205,12 @@ A new image is built each time a new version of ArgoCD CLI is detected. The vers
 
 > Note: No windows/amd64 platform support is provided for this image.
 
-#### Tags
+#### ArgoCD Tags
 
 - `octopuslabs/argocd-workertools:latest`
 - `octopuslabs/argocd-workertools:VERSION`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/argocd-workertools/tags).
-
 
 ### GitHub CLI workertools
 
@@ -223,7 +223,7 @@ A new image is built each time a new version of the GitHub CLI is detected. The 
 
 > Note: No windows/amd64 platform support is provided for this image.
 
-#### Tags
+#### GitHub CLI Tags
 
 - `octopuslabs/github-workertools:latest`
 - `octopuslabs/github-workertools:VERSION`
@@ -240,7 +240,7 @@ A new image is built each time a new version of HashiCorp Nomad is detected. The
 
 > Note: No windows/amd64 platform support is provided for this image.
 
-#### Tags
+#### Nomad Tags
 
 - `octopuslabs/nomad-workertools:latest`
 - `octopuslabs/nomad-workertools:VERSION`
@@ -255,7 +255,7 @@ This image contains all the necessary tooling to deploy to [JFrog](https://jfrog
 
 A new image is built each time a new version of the JFrog CLI is detected. The version numbers will be based on the version of the JFrog CLI.
 
-#### Tags
+#### JFrog Tags
 
 - `octopuslabs/jfrog-workertools:latest`
 - `octopuslabs/jfrog-workertools:VERSION`
@@ -273,12 +273,29 @@ A new image is built each time a new version of Trivy is detected. The version n
 
 > Note: No windows/amd64 platform support is provided for this image.
 
-#### Tags
+#### Trivy Tags
 
 - `octopuslabs/trivy-workertools:latest`
 - `octopuslabs/trivy-workertools:VERSION`
 
-You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/nomad-workertools/tags).
+You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/trivy-workertools/tags).
+
+### Bitwarden workertools
+
+This image contains all the necessary tooling to run [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/).⁠
+
+- BWS CLI
+
+The version numbers are based on the version of the `bws` CLI.
+
+> Note: No `windows/amd64` platform support is provided for this image.
+
+#### Bitwarden Tags
+
+- `octopuslabs/bitwarden-workertools:latest`
+- `octopuslabs/bitwarden-workertools:VERSION`
+
+You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/bitwarden-workertools/tags).
 
 ## Support
 
