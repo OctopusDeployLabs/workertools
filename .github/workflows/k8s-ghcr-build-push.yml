@@ -33,6 +33,7 @@ jobs:
       GCLOUD_CLI_VERSION: ${{ steps.check-version.outputs.GCLOUD_CLI_VERSION }}
       KUBECTL_MAJOR_MINOR_VERSION: ${{ steps.check-version.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
       WIN2022_VERSION: ${{ steps.check-version.outputs.WIN2022_VERSION }}
+      SOPS_VERSION: ${{ needs.get-version-number.outputs.SOPS_VERSION }}
     steps:
     - uses: actions/checkout@v4
     - id: check-version
@@ -140,6 +141,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       KUBECTL_MAJOR_MINOR_VERSION: ${{ needs.get-version-number.outputs.KUBECTL_MAJOR_MINOR_VERSION }}
+      SOPS_VERSION: ${{ needs.get-version-number.outputs.SOPS_VERSION }}
     steps:
 
     - name: Prepare
@@ -176,6 +178,7 @@ jobs:
         build-args: |
           BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE }}
           KUBECTL_MAJOR_MINOR_VERSION=${{ env.KUBECTL_MAJOR_MINOR_VERSION }}
+          SOPS_VERSION=${{ env.SOPS_VERSION }}
         outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
     - name: Export digest

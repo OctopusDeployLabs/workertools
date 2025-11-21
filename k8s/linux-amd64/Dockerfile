@@ -3,6 +3,7 @@ FROM ${BASE_IMAGE}:latest
 
 ARG DEBIAN_FRONTEND noninteractive
 ARG KUBECTL_MAJOR_MINOR_VERSION=1.29
+ARG SOPS_VERSION=3.11.0
 
 # Get kubectl
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
@@ -16,8 +17,10 @@ RUN curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases
     install -m 555 argocd-linux-amd64 /usr/local/bin/argocd && \
     rm argocd-linux-amd64
 
-# Get latest Helm v3
+# Get latest Helm v3 and Helm secrets plugin (https://github.com/jkroepke/helm-secrets/wiki/Installation#manual-installation - works for helm 2+3)
 RUN wget --quiet -O - https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+RUN curl -sL "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64" -o /usr/local/bin/sops; chmod +x /usr/local/bin/sops && \
+    mkdir -p "$(helm env HELM_PLUGINS)" && curl -LsSf https://github.com/jkroepke/helm-secrets/releases/latest/download/helm-secrets.tar.gz | tar -C "$(helm env HELM_PLUGINS)" -xzf-
 
 # Get Kubelogin
 RUN wget --quiet https://github.com/Azure/kubelogin/releases/latest/download/kubelogin-linux-amd64.zip && \
