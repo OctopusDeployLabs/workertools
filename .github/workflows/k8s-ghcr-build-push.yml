@@ -74,6 +74,20 @@ jobs:
             echo "GCLOUD_CLI_VERSION=$GCLOUD_CLI_VERSION" >> $env:GITHUB_OUTPUT
         }
 
+        Write-Output "Getting latest SOPS version"
+        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/getsops/sops/releases/latest"
+        $LATEST_SOPS_VERSION = $release.tag_name
+
+        # Check if it's empty
+        if ([string]::IsNullOrWhiteSpace($LATEST_SOPS_VERSION)) {
+            throw "Error: Could not determine latest SOPS version."
+        }
+        else {
+            $LATEST_SOPS_VERSION = $LATEST_SOPS_VERSION.TrimStart("v")
+            Write-Host "Latest SOPS version is: $LATEST_SOPS_VERSION"
+            echo "SOPS_VERSION=$LATEST_SOPS_VERSION" >> $env:GITHUB_OUTPUT
+        }
+
         Write-Output "Getting kubectl version"
         $chocoInformationRaw = choco info kubernetes-cli --limitoutput
         $versionOutput = ($chocoInformationRaw.Split("|"))[1]
