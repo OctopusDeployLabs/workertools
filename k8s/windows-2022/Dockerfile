@@ -12,13 +12,13 @@ RUN choco install -y kubernetes-helm --no-progress
 
 # install sops and helm-secrets
 RUN $url = "https://github.com/jkroepke/helm-secrets/releases/latest/download/helm-secrets.tar.gz"; `
-    $installPath = "${env:APPDATA}\helm\plugins"; `
-    $pluginDir = Join-Path $installPath "secrets"; `
-    $tempFile = "${env:TEMP}\helm-secrets.tar.gz"; `
+    $pluginsDir = Join-Path $env:APPDATA "helm/plugins"; `
+    $pluginDir = Join-Path $pluginsDir "secrets"; `
+    $tempFile = Join-Path $env:TEMP "helm-secrets.tar.gz"; `
     New-Item -Path $pluginDir -ItemType Directory -Force | Out-Null; `
     Invoke-WebRequest -Uri $url -OutFile $tempFile -FollowRelocation; `
-    tar.exe -xzf $tempFile -C $pluginDir; `
-    Remove-Item -Path $tempFile -Force
+    tar -xzf $tempFile -C $pluginDir; `
+    Remove-Item $tempFile -Force
 RUN choco install sops -y --no-progress
 
 # Get Kubelogin
