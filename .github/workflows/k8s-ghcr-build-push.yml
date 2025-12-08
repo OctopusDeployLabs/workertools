@@ -75,8 +75,7 @@ jobs:
         }
 
         Write-Output "Getting latest SOPS version"
-        $sops_token = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("${{ secrets.GITHUB_TOKEN }}"))
-        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/getsops/sops/releases/latest" -Headers @{Authorization="Bearer $sops_token"}
+        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/getsops/sops/releases/latest" -Headers @{Authorization="Bearer ${{ secrets.GITHUB_TOKEN }}"}
         $LATEST_SOPS_VERSION = $release.tag_name
 
         # Check if it's empty
