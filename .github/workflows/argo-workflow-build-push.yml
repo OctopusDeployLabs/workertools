@@ -29,6 +29,8 @@ jobs:
             password: ${{ secrets.DOCKER_HUB_PAT }}
  
         - name: Build image
+        with:
+            context: argo-workflows
           run: >
             docker buildx build --platform 'linux/amd64,linux/arm64' \
                 --file Dockerfile \
