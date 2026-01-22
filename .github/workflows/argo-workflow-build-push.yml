@@ -1,0 +1,45 @@
+name: Build argo-workflow-workertools image
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - argo-workflow/**
+  workflow_dispatch:
+
+env: 
+    VERSION: 3.8.7-$GITHUB_RUN_NUMBER
+    REGISTRY_IMAGE: lrochette/argo-workflow-workertools
+jobs:
+    build-linux:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+
+        - name: Login to DockerHub
+          uses: docker/login-action@v3
+          with:
+            username: ${{ secrets.DOCKER_HUB_USER }}
+            password: ${{ secrets.DOCKER_HUB_PAT }}
+ 
+        - name: Build image
+        run: >
+          docker buildx build --platform 'linux/amd64,linux/arm64' \
+            --file Dockerfile \
+            --build-arg VERSION=${{ env.VERSION }} 
+            --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION}} \
+            --push .
+    
+      - name: report image
+        - name: Build and push argo-workflow-workertools image for linux/arm64
+          uses: docker/build-push-action@v4
+          with:
+            context: ./argo-workflow/linux-arm64
+            platforms: linux/arm64
+            push: true
+            tags: octopuslabs/argo-workflow-workertools:${{ env.VERSION }},octopuslabs/argo-workflow-workertools:latest
