@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG KUBECTL_MAJOR_MINOR_VERSION=1.30
-ARG VERSION=3.7.8       # Aego Workflow version
+ARG VERSION=3.7.8       # Argo Workflow version
 ARG YQ_VERSION=4.49.2
 ARG TARGETARCH 
 
