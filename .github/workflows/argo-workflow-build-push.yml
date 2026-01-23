@@ -9,7 +9,8 @@ on:
   workflow_dispatch:
 
 env: 
-    VERSION: 3.8.7-$GITHUB_RUN_NUMBER
+    VERSION: 3.7.8
+    TAG: 3.7.8.$GITHUB_RUN_NUMBER
     REGISTRY_IMAGE: lrochette/argo-workflow-workertools
 
 jobs:
@@ -33,5 +34,5 @@ jobs:
             cd argo-workflow
             docker buildx build --platform 'linux/amd64,linux/arm64' \
                 --build-arg VERSION=${{ env.VERSION }} \
-                --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION}} \
+                --tag ${{ env.REGISTRY_IMAGE }}:${{ env.TAG }} \
                 --push .
