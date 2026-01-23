@@ -30,7 +30,7 @@ jobs:
  
         - name: Build image
           run: |
-            cd argo-workflows
+            cd argo-workflow
             docker buildx build --platform 'linux/amd64,linux/arm64' \
                 --build-arg VERSION=${{ env.VERSION }} \
                 --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION}} \
