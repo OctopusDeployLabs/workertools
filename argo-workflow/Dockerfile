@@ -16,7 +16,7 @@ RUN wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download
 RUN which gunzip
 
 # Install Argo Worfklows CLI
-RUN curl -sSL -o argo-linux-${TARGETARCH}.gz https://github.com/argoproj/argo-workflows/releases/download/v$VERSION/argo-linux-${TARGETARCH}.gz \
+RUN curl -sLO  https://github.com/argoproj/argo-workflows/releases/download/v$VERSION/argo-linux-${TARGETARCH}.gz \
     && gunzip argo-linux-${TARGETARCH}.gz \
     && install -m 555 argo-linux-${TARGETARCH} /usr/local/bin/argo \
     && rm argo-linux-${TARGETARCH}
