@@ -17,7 +17,7 @@ RUN which gunzip
 
 # Install Argo Worfklows CLI
 RUN curl -sLO  https://github.com/argoproj/argo-workflows/releases/download/v$VERSION/argo-linux-${TARGETARCH}.gz \
-    && gunzip argo-linux-${TARGETARCH}.gz \
+    && uncompress argo-linux-${TARGETARCH}.gz \
     && install -m 555 argo-linux-${TARGETARCH} /usr/local/bin/argo \
     && rm argo-linux-${TARGETARCH}
 
