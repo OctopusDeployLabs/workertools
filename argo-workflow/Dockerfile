@@ -8,7 +8,10 @@ ARG TARGETARCH
 
 # Get pre-req tooling
 RUN apt-get update && \
-    apt-get install -y wget unzip curl jq
+    apt-get install -y wget unzip curl jq 
+
+# install packages required to install kubectl
+RUN apt-get install -y apt-transport-https ca-certificates  gnupg
 
 # Get yq, yaml parser
 RUN wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_${TARGETARCH} && \
