@@ -7,8 +7,9 @@ ARG YQ_VERSION=4.49.2
 ARG TARGETARCH 
 
 # Get pre-req tooling
+# xxd is required to use octopus_parameters
 RUN apt-get update && \
-    apt-get install -y wget unzip curl jq 
+    apt-get install -y wget unzip curl jq xxd
 
 # install packages required to install kubectl
 RUN apt-get install -y apt-transport-https ca-certificates  gnupg
