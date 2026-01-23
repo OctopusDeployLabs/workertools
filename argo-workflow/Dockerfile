@@ -1,14 +1,16 @@
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS base
 
-ARG DEBIAN_FRONTEND noninteractive
-ARG VERSION 3.7.8
+ARG DEBIAN_FRONTEND=noninteractive
+ARG VERSION=3.7.8
+ARG YQ_VERSION=4.49.2
+ARG TARGETARCH 
 
 # Get pre-req tooling
 RUN apt-get update && \
     apt-get install -y wget unzip curl jq
 
 # Get yq, yaml parser
-RUN wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${TARGETARCH} && \
+RUN wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_${TARGETARCH} && \
     chmod a+x /usr/local/bin/yq
 
 # Install Argo Worfklows CLI
