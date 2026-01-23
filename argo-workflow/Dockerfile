@@ -13,6 +13,8 @@ RUN apt-get update && \
 RUN wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_${TARGETARCH} && \
     chmod a+x /usr/local/bin/yq
 
+RUN which gunzip
+
 # Install Argo Worfklows CLI
 RUN curl -sSL -o argo-linux-${TARGETARCH}.gz https://github.com/argoproj/argo-workflows/releases/download/v$VERSION/argo-linux-${TARGETARCH}.gz \
     && gunzip argo-linux-${TARGETARCH}.gz \
