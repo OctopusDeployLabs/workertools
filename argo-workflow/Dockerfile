@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG KUBECTL_MAJOR_MINOR_VERSION=1.30
-ARG VERSION=3.7.8       # Argo Workflow version
+ARG ARGO_WORKFLOW_VERSION=3.7.8
 ARG YQ_VERSION=4.49.2
 ARG TARGETARCH 
 
@@ -26,8 +26,8 @@ RUN mkdir -m 755 -p /etc/apt/keyrings && \
     apt-get update && apt-get install -y kubectl
 
 
-# Install Argo Worfklows CLI
-RUN curl -sLO  https://github.com/argoproj/argo-workflows/releases/download/v$VERSION/argo-linux-${TARGETARCH}.gz \
+# Install Argo Workflows CLI
+RUN curl -sLO  https://github.com/argoproj/argo-workflows/releases/download/v$ARGO_WORKFLOW_VERSION/argo-linux-${TARGETARCH}.gz \
     && gunzip argo-linux-${TARGETARCH}.gz \
     && install -m 555 argo-linux-${TARGETARCH} /usr/local/bin/argo \
     && rm argo-linux-${TARGETARCH}
