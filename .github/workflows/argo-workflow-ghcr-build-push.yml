@@ -34,6 +34,8 @@ jobs:
     - uses: actions/checkout@v4
     - id: check-version
       name: Compare latest version with container
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         $forceRun = "${{ github.event.inputs.force_run }}" -eq "true"
         Write-Output "Getting Argo Workflows version"
@@ -69,7 +71,7 @@ jobs:
             $matchingTag = $workerToolsTags | Where-Object { $_ -eq $versionToCompare }
 
             echo "VERSION=$versionToCompare" >> $env:GITHUB_OUTPUT
-            
+
             $isUpgradeNeeded = $null -eq $matchingTag -and ($null -eq $response.errors -or $response.errors[0].code -ieq "NAME_UNKNOWN")
 
             if ($forceRun -or $isUpgradeNeeded)
