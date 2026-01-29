@@ -10,7 +10,7 @@ on:
     paths:
     - argo-workflow/**
   schedule:
-    - cron: '30 1 * * *'
+    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       force_run:
@@ -212,4 +212,5 @@ jobs:
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
       - name: Inspect image
         run: |
+
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
