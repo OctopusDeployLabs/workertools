@@ -77,6 +77,7 @@ This image contains all the necessary tooling to deploy to [Azure](https://azure
 - Azure CLI
 - Azure PowerShell (Az Modules)
 - TerraForm
+- Azcopy
 
 A new image is built each time a new version of Azure CLI is detected. The version numbers will be based on the version of the Azure CLI.
 
