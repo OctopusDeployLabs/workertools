@@ -19,6 +19,9 @@ RUN pwsh -c 'Install-Module -Name Az -Repository PSGallery -Scope AllUsers -Allo
 
 # Get AZCopy
 # https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-install-linux-package?tabs=apt
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/microsoft-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/repos/microsoft-debian-bookworm-prod bookworm main" | tee /etc/apt/sources.list.d/microsoft.list && \
-    apt update && apt install -y azcopy
+RUN set -eux; \
+    curl -sSL "https://aka.ms/downloadazcopy-v10-linux" -o azcopy.tar.gz; \
+    tar -xzf azcopy.tar.gz; \
+    mv azcopy_linux_*/azcopy /usr/local/bin/; \
+    chmod +x /usr/local/bin/azcopy; \
+    rm -rf azcopy_linux_* azcopy.tar.gz
