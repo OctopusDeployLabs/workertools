@@ -183,7 +183,7 @@ jobs:
 
     - name: Build the win2022 image
       working-directory: ./jfrog
-      run: docker build ./windows-2022 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg JFROG_CLI_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
+      run: docker buildx build --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg JFROG_CLI_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022 --load ./windows-2022
 
     - name: Push the win2022 version-specific image
       run: docker push ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
