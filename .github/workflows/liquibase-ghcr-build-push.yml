@@ -47,7 +47,7 @@ jobs:
         $releasesUrl = "https://api.github.com/repos/$Repository/releases"
 
         $tags = (Invoke-WebRequest $releasesUrl -UseBasicParsing -Headers $headers | ConvertFrom-Json)
-        $tagsWithAssets = @($tags | Where-Object {$_.assets.Count -gt 0 })
+        $tagsWithAssets = @($tags | Where-Object {$_.assets.Count -gt 0 -and $_.tag_name -inotlike "*nightly*" })
 
         if($null -eq $tagsWithAssets) {
             throw "No valid tags found for liquibase tool!"
