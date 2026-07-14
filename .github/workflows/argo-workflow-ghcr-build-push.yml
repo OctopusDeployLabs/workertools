@@ -162,6 +162,8 @@ jobs:
           ARGO_WORKFLOW_VERSION=${{ env.ARGO_WORKFLOW_VERSION }}
           KUBECTL_MAJOR_MINOR_VERSION=${{ env.KUBECTL_MAJOR_MINOR_VERSION }}
         outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+        cache-from: type=gha,scope=${{ env.REGISTRY_IMAGE }}-${{ github.job }}-${{ env.PLATFORM_PAIR }}
+        cache-to: type=gha,mode=max,scope=${{ env.REGISTRY_IMAGE }}-${{ github.job }}-${{ env.PLATFORM_PAIR }}
 
     - name: Export digest
       run: |
