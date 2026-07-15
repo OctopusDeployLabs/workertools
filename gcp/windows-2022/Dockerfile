@@ -3,7 +3,7 @@ ARG BASE_IMAGE=octopuslabs/workertools
 FROM ${BASE_IMAGE}:latest
 SHELL ["powershell", "-Command"]
 
-ARG GOOGLE_CLOUD_CLI_VERSION=462.0.0
+ARG GOOGLE_CLOUD_CLI_VERSION=576.0.0
 
 # Install Terraform
 RUN choco install terraform -y --no-progress
