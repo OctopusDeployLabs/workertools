@@ -150,7 +150,7 @@ jobs:
         provenance: false
         build-args: |
           BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE }}
-          GCLOUD_CLI_VERSION=${{ env.VERSION_NUMBER }}
+          GOOGLE_CLOUD_CLI_VERSION=${{ env.VERSION_NUMBER }}-0
         outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
         cache-from: type=gha,scope=${{ env.REGISTRY_IMAGE }}-${{ github.job }}-${{ env.PLATFORM_PAIR }}
         cache-to: type=gha,mode=max,scope=${{ env.REGISTRY_IMAGE }}-${{ github.job }}-${{ env.PLATFORM_PAIR }}
@@ -186,7 +186,7 @@ jobs:
 
     - name: Build the win2022 image
       working-directory: ./gcp
-      run: docker build ./windows-2022 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg GCLOUD_CLI_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
+      run: docker build ./windows-2022 --build-arg BASE_IMAGE=${{ env.REGISTRY_IMAGE_BASE}} --build-arg GOOGLE_CLOUD_CLI_VERSION=${{ env.VERSION_NUMBER}} --tag ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
       
     - name: Push the win2022 version-specific image
       run: docker push ${{ env.REGISTRY_IMAGE }}:${{ env.VERSION_NUMBER }}-win.2022
