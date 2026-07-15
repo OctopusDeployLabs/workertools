@@ -5,7 +5,7 @@ FROM docker.io/docker:cli AS docker-build
 # Stage 2: The final image
 FROM ${BASE_IMAGE}:latest
 
-ARG DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Copy the Docker executable from the build stage
 COPY --from=docker-build /usr/local/bin/docker /usr/local/bin/docker

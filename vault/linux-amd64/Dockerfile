@@ -1,7 +1,7 @@
 ARG BASE_IMAGE=octopuslabs/workertools
 FROM ${BASE_IMAGE}:latest
 
-ARG DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 ARG VAULT_VERSION=1.15.5
 
 RUN apt update && apt install -y gpg wget libcap2-bin

@@ -1,7 +1,8 @@
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS base
 
+ARG PS_MAJOR_VERSION
 ARG PS_VERSION
-ARG DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Get pre-req tooling
 RUN apt-get update && \

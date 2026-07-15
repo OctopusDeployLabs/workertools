@@ -1,7 +1,7 @@
 ARG BASE_IMAGE=octopuslabs/workertools
 FROM ${BASE_IMAGE}:latest
 
-ARG DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 ARG NOMAD_VERSION=1.9.5-1
 ARG NOMAD_PACKAGE=nomad
 

@@ -1,7 +1,7 @@
 ARG BASE_IMAGE=octopuslabs/workertools
 FROM ${BASE_IMAGE}:latest
 
-ARG DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Get Terraform
 # https://developer.hashicorp.com/terraform/downloads
