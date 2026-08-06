@@ -32,7 +32,7 @@ jobs:
       MAJOR_VERSION: ${{ steps.check-version.outputs.MAJOR_VERSION }}
       WIN2022_VERSION: ${{ steps.check-version.outputs.WIN2022_VERSION }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - id: check-version
       name: Compare latest version with container
       run: |
@@ -115,7 +115,7 @@ jobs:
           echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -162,7 +162,7 @@ jobs:
       VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Login to GHCR
       uses: docker/login-action@v3

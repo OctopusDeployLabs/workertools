@@ -28,7 +28,7 @@ jobs:
       CONTINUE: ${{ steps.check-version.outputs.CONTINUE }}
       VERSION: ${{ steps.check-version.outputs.VERSION }}
     steps:    
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - id: check-version
       name: Compare latest version with container
       env:
@@ -107,7 +107,7 @@ jobs:
           echo "PLATFORM_ARCH=${platform//[linux\/]/}" >> $GITHUB_ENV
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
