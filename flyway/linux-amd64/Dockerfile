@@ -18,6 +18,17 @@ RUN apt-get update && apt-get install unzip \
   && rm awscliv2.zip \
   && ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update 
 
+# Install mongosh for execution against mongodb databases
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    ca-certificates \
+    && wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg \
+    && echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
+    && apt-get update && apt-get install -y \
+    mongodb-mongosh \
+    && rm -rf /var/lib/apt/lists/*  
+
 # Change the workdir to flyway to install flyway binaries
 WORKDIR /flyway
 
