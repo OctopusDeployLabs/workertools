@@ -48,7 +48,7 @@ RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dea
 echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 
 RUN apt-get update && apt-get install -y google-cloud-cli
-RUN apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+RUN apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
 # Get the Istio CLI
 # https://istio.io/docs/ops/diagnostic-tools/istioctl/
