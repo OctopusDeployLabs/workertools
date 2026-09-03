@@ -42,8 +42,8 @@ RUN pwsh -c 'Install-Module -Name Az -Repository PSGallery -Scope AllUsers -Allo
 # https://cloud.google.com/sdk/docs/downloads-apt-get
 RUN apt-get install -y ca-certificates gnupg && \
     curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    apt-get update && apt-get install -y google-cloud-sdk
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-cli.list && \
+    apt-get update && apt-get install -y google-cloud-cli
 
 ## Install Trivy
 RUN apt-get update && \
