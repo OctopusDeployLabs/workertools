@@ -8,7 +8,7 @@ Images are typically available for:
 
 - `linux/amd64`
 - `linux/arm64` 
-- `windows/amd64` (Windows 2022)
+- `windows/amd64` (Windows 2025)
 
 > Some tools may not provide `linux/arm64` or `windows/amd64` platform support.
 
@@ -46,7 +46,7 @@ A new image is built each time a new version of PowerShell Core is detected. The
 
 - `octopuslabs/workertools:latest`
 - `octopuslabs/workertools:VERSION`
-- `octopuslabs/workertools:VERSION-win.2022`
+- `octopuslabs/workertools:VERSION-win.2025`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/workertools/tags).
 
@@ -66,7 +66,7 @@ A new image is built each time a new version of AWS CLI is detected. The version
 
 - `octopuslabs/aws-workertools:latest`
 - `octopuslabs/aws-workertools:VERSION`
-- `octopuslabs/aws-workertools:VERSION-win.2022`
+- `octopuslabs/aws-workertools:VERSION-win.2025`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/aws-workertools/tags).
 
@@ -85,7 +85,7 @@ A new image is built each time a new version of Azure CLI is detected. The versi
 
 - `octopuslabs/azure-workertools:latest`
 - `octopuslabs/azure-workertools:VERSION`
-- `octopuslabs/azure-workertools:VERSION-win.2022`
+- `octopuslabs/azure-workertools:VERSION-win.2025`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/azure-workertools/tags).
 
@@ -102,7 +102,7 @@ A new image is built each time a new version of flyway is detected. The version 
 
 - `octopuslabs/flyway-workertools:latest`
 - `octopuslabs/flyway-workertools:VERSION`
-- `octopuslabs/flyway-workertools:VERSION-win.2022`
+- `octopuslabs/flyway-workertools:VERSION-win.2025`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/azure-workertools/tags).
 
@@ -119,7 +119,7 @@ A new image is built each time a new version of the Google Cloud SDK is detected
 
 - `octopuslabs/gcp-workertools:latest`
 - `octopuslabs/gcp-workertools:VERSION`
-- `octopuslabs/gcp-workertools:VERSION-win.2022`
+- `octopuslabs/gcp-workertools:VERSION-win.2025`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/gcp-workertools/tags).
 
@@ -138,7 +138,7 @@ A new image is built each time a new version of `kubectl` is detected. The versi
 
 - `octopuslabs/k8s-workertools:latest`
 - `octopuslabs/k8s-workertools:VERSION`
-- `octopuslabs/k8s-workertools:VERSION-win.2022`
+- `octopuslabs/k8s-workertools:VERSION-win.2025`
 - `octopuslabs/k8s-workertools:[VERSION-Major].[Version-Minor]`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/k8s-workertools/tags).
@@ -174,7 +174,7 @@ A new image is built each time a new version of Terraform is detected. The versi
 
 - `octopuslabs/terraform-workertools:latest`
 - `octopuslabs/terraform-workertools:VERSION`
-- `octopuslabs/terraform-workertools:VERSION-win.2022`
+- `octopuslabs/terraform-workertools:VERSION-win.2025`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/terraform-workertools/tags).
 
@@ -260,7 +260,7 @@ A new image is built each time a new version of the JFrog CLI is detected. The v
 
 - `octopuslabs/jfrog-workertools:latest`
 - `octopuslabs/jfrog-workertools:VERSION`
-- `octopuslabs/jfrog-workertools:VERSION-win.2022`
+- `octopuslabs/jfrog-workertools:VERSION-win.2025`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/jfrog-workertools/tags).
 
