@@ -59,7 +59,7 @@ jobs:
             Write-Host "We need to upgrade the flyway container to $versionToCompare"
 
             Write-Host "Getting OS versions for windows 2025"
-            $win2025_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2025" | ConvertFrom-Json)
+            $win2025_manifest = (docker manifest inspect --verbose "mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2025"  | ConvertFrom-Json)
             $WIN2025_VERSION = $win2025_manifest.Descriptor.Platform.'os.version'
             Write-Host "WIN2025_VERSION: $WIN2025_VERSION"
 
