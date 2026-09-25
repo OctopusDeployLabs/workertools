@@ -21,3 +21,7 @@ RUN wget --quiet -O - https://raw.githubusercontent.com/helm/helm/main/scripts/g
 
 # JQ
 RUN apt-get install -y jq
+
+RUN curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-arm64 && \
+    chmod +x ./kubectl-argo-rollouts-linux-arm64 && \
+    sudo mv ./kubectl-argo-rollouts-linux-arm64 /usr/local/bin/kubectl-argo-rollouts
