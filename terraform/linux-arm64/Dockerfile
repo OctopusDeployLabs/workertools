@@ -1,6 +1,8 @@
 ARG BASE_IMAGE=octopuslabs/workertools
 FROM ${BASE_IMAGE}:latest
 
+LABEL org.opencontainers.image.source="https://github.com/OctopusDeployLabs/workertools"
+
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TERRAFORM_VERSION=1.7.2
 

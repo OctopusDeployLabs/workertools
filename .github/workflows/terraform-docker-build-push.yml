@@ -217,3 +217,40 @@ jobs:
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
+
+  release:
+    needs: [get-version-number, merge]
+    if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # Renovate matches release notes to the image by a tag of the form <image>-<version>
+      - name: Create GitHub release
+        run: |
+          tag="${REGISTRY_IMAGE}-${VERSION_NUMBER}"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            echo "Release $tag already exists"
+            exit 0
+          fi
+
+          previous_tag=$(git tag --list "${REGISTRY_IMAGE}-*" --sort=-version:refname | head -n 1)
+          {
+            echo "Terraform [v${VERSION_NUMBER}](https://github.com/hashicorp/terraform/releases/tag/v${VERSION_NUMBER})"
+            echo
+            gh release view "v${VERSION_NUMBER}" -R hashicorp/terraform --json body --jq .body
+            if [ -n "$previous_tag" ]; then
+              changes=$(git log --format='- %s (%h)' "${previous_tag}..HEAD" -- terraform .github/workflows/terraform-docker-build-push.yml)
+              if [ -n "$changes" ]; then
+                printf '\n## Image changes\n\n%s\n' "$changes"
+              fi
+            fi
+          } > notes.md
+
+          gh release create "$tag" --target "$GITHUB_SHA" --title "$tag" --notes-file notes.md
