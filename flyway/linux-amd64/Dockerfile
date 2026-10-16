@@ -6,8 +6,12 @@ ARG FLYWAY_VERSION=13.10.3
 # Get JRE
 RUN apt-get update && apt-get install -y openjdk-17-jre-headless
 
-# SQLFluff for Flyway's check -code command ships with the Flyway CLI (11.10+, on by default from 11.16)
-# as a self-contained runner, so it doesn't need installing separately.
+# Get SQL Fluff for Flyway Check Command
+# Flyway Enterprise uses the SQLFluff runner bundled with the Flyway CLI. Community and Teams
+# fall back to a local SQLFluff installation, so install one for them.
+# Added --break-system-packages as a result of https://peps.python.org/pep-0668/
+# Setting a virtual env in a container isnt needed.
+RUN pip3 install sqlfluff==3.4.0 --break-system-packages
 
 # Install AWS CLI to support IAM role authentication
 RUN apt-get update && apt-get install unzip \

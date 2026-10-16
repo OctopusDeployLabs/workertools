@@ -5,8 +5,12 @@ SHELL ["powershell", "-Command"]
 
 ARG FLYWAY_VERSION=13.10.3
 
-# SQLFluff for Flyway's check -code command ships with the Flyway CLI (11.10+, on by default from 11.16)
-# as a self-contained runner, so it doesn't need installing separately.
+# Get SQL Fluff for Flyway Check Command
+# Flyway Enterprise uses the SQLFluff runner bundled with the Flyway CLI. Community and Teams
+# fall back to a local SQLFluff installation, so install one for them.
+# PyYAML may have no prebuilt wheel for the base image's Python, so skip its optional
+# C extension when building from source to avoid needing MSVC.
+RUN $env:PYYAML_FORCE_LIBYAML = '0'; pip3 install sqlfluff==3.4.0
 
 # # Install Flyway
 RUN Invoke-WebRequest "https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/${env:FLYWAY_VERSION}/flyway-commandline-${env:FLYWAY_VERSION}-windows-x64.zip" -OutFile flyway-cli.zip; `
