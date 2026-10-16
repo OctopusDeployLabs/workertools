@@ -3,10 +3,10 @@ ARG BASE_IMAGE=octopuslabs/workertools
 FROM ${BASE_IMAGE}:latest
 SHELL ["powershell", "-Command"]
 
-ARG FLYWAY_VERSION=10.7.1
+ARG FLYWAY_VERSION=13.10.3
 
-# Get SQL Fluff for Flyway Check Command
-RUN pip3 install sqlfluff==1.2.1
+# SQLFluff for Flyway's check -code command ships with the Flyway CLI (11.10+, on by default from 11.16)
+# as a self-contained runner, so it doesn't need installing separately.
 
 # # Install Flyway
 RUN Invoke-WebRequest "https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/${env:FLYWAY_VERSION}/flyway-commandline-${env:FLYWAY_VERSION}-windows-x64.zip" -OutFile flyway-cli.zip; `
