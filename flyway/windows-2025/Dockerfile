@@ -3,10 +3,14 @@ ARG BASE_IMAGE=octopuslabs/workertools
 FROM ${BASE_IMAGE}:latest
 SHELL ["powershell", "-Command"]
 
-ARG FLYWAY_VERSION=10.7.1
+ARG FLYWAY_VERSION=13.10.3
 
 # Get SQL Fluff for Flyway Check Command
-RUN pip3 install sqlfluff==1.2.1
+# Flyway Enterprise uses the SQLFluff runner bundled with the Flyway CLI. Community and Teams
+# fall back to a local SQLFluff installation, so install one for them.
+# PyYAML may have no prebuilt wheel for the base image's Python, so skip its optional
+# C extension when building from source to avoid needing MSVC.
+RUN $env:PYYAML_FORCE_LIBYAML = '0'; pip3 install sqlfluff==3.4.0
 
 # # Install Flyway
 RUN Invoke-WebRequest "https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/${env:FLYWAY_VERSION}/flyway-commandline-${env:FLYWAY_VERSION}-windows-x64.zip" -OutFile flyway-cli.zip; `

@@ -1,15 +1,18 @@
 ARG BASE_IMAGE=octopuslabs/workertools
 FROM ${BASE_IMAGE}:latest
 
-ARG FLYWAY_VERSION=10.7.1
+ARG FLYWAY_VERSION=13.10.3
 
 # Get JRE
 RUN apt-get update && apt-get install -y openjdk-17-jre-headless
 
 # Get SQL Fluff for Flyway Check Command
+# The SQLFluff runner bundled with the Flyway CLI is x86-64 only, so install SQLFluff with pip
+# and tell Flyway to use it instead of the bundled runner.
 # Added --break-system-packages as a result of https://peps.python.org/pep-0668/
 # Setting a virtual env in a container isnt needed.
-RUN pip3 install sqlfluff==1.2.1 --break-system-packages
+RUN pip3 install sqlfluff==3.4.0 --break-system-packages
+ENV FLYWAY_ENV_NATIVE_SQLFLUFF=false
 
 # Install AWS CLI to support IAM role authentication
 RUN apt-get update && apt-get install unzip \
