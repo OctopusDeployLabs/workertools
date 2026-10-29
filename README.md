@@ -31,6 +31,7 @@ The following images are built from this repository:
 - [Jfrog workertools](#jfrog-workertools) (`octopuslabs/jfrog-workertools`)
 - [Trivy workertools](#trivy-workertools) (`octopuslabs/trivy-workertools`)
 - [Bitwarden workertools](#bitwarden-workertools) (`octopuslabs/bitwarden-workertools`)
+- [1Password workertools](#1password-workertools) (`octopuslabs/onepassword-workertools`)
 
 ### Base workertools
 
@@ -297,6 +298,24 @@ The version numbers are based on the version of the `bws` CLI.
 - `octopuslabs/bitwarden-workertools:VERSION`
 
 You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/bitwarden-workertools/tags).
+
+### 1Password workertools
+
+This image contains all the necessary tooling to run the [1Password CLI](https://developer.1password.com/docs/cli/).
+
+- 1Password CLI (`op`)
+- DNS Utilities (`nslookup`)
+
+The version numbers are based on the version of the `op` CLI.
+
+> Note: No `windows/amd64` platform support is provided for this image.
+
+#### 1Password Tags
+
+- `octopuslabs/onepassword-workertools:latest`
+- `octopuslabs/onepassword-workertools:VERSION`
+
+You can retrieve a list of all available tags on [DockerHub](https://hub.docker.com/repository/docker/octopuslabs/onepassword-workertools/tags).
 
 ## Support
 
